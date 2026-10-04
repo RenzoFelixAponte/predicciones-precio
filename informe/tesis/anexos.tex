@@ -16,8 +16,8 @@ Este anexo documenta el prototipo construido en las semanas 1 a 6. El prototipo 
 \toprule
 \textbf{Archivo} & \textbf{Función} \\
 \midrule
-\texttt{src/pipeline.py} & Pasos 1 a 4 en su versión semanal, que son limpieza, señales, casos sospechosos y reglas sencillas (Algoritmos~\ref{alg:limpiar} a~\ref{alg:reglas}) \\
-\texttt{src/pedido.py} & Versión por pedido y calibración de umbrales (Algoritmos~\ref{alg:linea} y~\ref{alg:calibrar}) \\
+\texttt{src/pipeline.py} & Pasos 1 a 4 en su versión semanal, que son limpieza, señales, casos sospechosos y reglas sencillas (Algoritmos~\ref{alg:limpiar} a~\ref{alg:candidatos}) \\
+\texttt{src/pedido.py} & Versión por pedido y calibración de umbrales (Algoritmo~\ref{alg:linea}) \\
 \texttt{src/modelo.py} & Parte interna del software, con el entrenamiento del árbol, análisis de parámetros y revisión de pedidos (Algoritmos~\ref{alg:entrenar} y~\ref{alg:revisar}) \\
 \texttt{src/app.py} & Ventana en Tkinter con los botones Entrenar, Revisar y Exportar \\
 \texttt{src/figuras\_gestion.py} & EDT, diagrama de Gantt y matriz de riesgos \\
@@ -25,15 +25,6 @@ Este anexo documenta el prototipo construido en las semanas 1 a 6. El prototipo 
 \bottomrule
 \end{tabularx}
 \end{table}
-
-\subsection{Archivo de entrada}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{xl_00_original.png}
-\caption{Archivo \texttt{exportBIMBO.xlsx} tal como se exporta del sistema de compras. Es la única entrada del prototipo.}
-\label{fig:xl-original}
-\end{figure}
 
 \subsection{Paso 1: limpieza}
 
@@ -56,18 +47,6 @@ Este anexo documenta el prototipo construido en las semanas 1 a 6. El prototipo 
 \State \Return líneas vigentes, líneas modificadas y resumen de conteos
 \end{algorithmic}
 \end{algorithm}
-
-\begin{figure}[H]
-\centering
-\begin{minipage}[t]{0.32\textwidth}\centering
-\includegraphics[width=\textwidth]{xl_01_resumen.png}
-\end{minipage}\hfill
-\begin{minipage}[t]{0.66\textwidth}\centering
-\includegraphics[width=\textwidth]{xl_01_rectificadas.png}
-\end{minipage}
-\caption{\texttt{salidas/01\_limpio.xlsx}. A la izquierda, la hoja \texttt{resumen} con las cifras de limpieza; a la derecha, la hoja \texttt{rectificadas} con las líneas anuladas cuya cantidad cambió.}
-\label{fig:xl-limpio}
-\end{figure}
 
 \subsection{Paso 2: señales}
 
@@ -119,28 +98,6 @@ Este anexo documenta el prototipo construido en las semanas 1 a 6. El prototipo 
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Paso 4: reglas sencillas}
-
-\begin{algorithm}[H]
-\caption{Evaluación de las reglas sencillas}
-\label{alg:reglas}
-\begin{algorithmic}[1]
-\Require tabla de señales con etiquetas propuestas
-\Ensure métricas por regla y periodo
-\State dividir las semanas en ajuste (hasta el 3 de agosto), validación (10 y 17 de agosto) y prueba (24 y 31 de agosto)
-\ForAll{regla en \{semana anterior, habitual de la tienda, inusual sin ejemplos\}}
-    \ForAll{periodo}
-        \State contar alertas, casos sospechosos y aciertos
-        \State precisión $\gets$ aciertos / alertas
-        \State exhaustividad $\gets$ aciertos / casos sospechosos
-        \State alertas por semana $\gets$ alertas / número de semanas
-    \EndFor
-\EndFor
-\State \Return tabla de métricas
-\end{algorithmic}
-\end{algorithm}
-
-
 \subsection{Versión por pedido}
 
 \begin{algorithm}[H]
@@ -162,22 +119,6 @@ Este anexo documenta el prototipo construido en las semanas 1 a 6. El prototipo 
 \State \Return señales por línea y días de anticipación respecto de la entrega
 \end{algorithmic}
 \end{algorithm}
-
-\begin{algorithm}[H]
-\caption{Calibración de umbrales}
-\label{alg:calibrar}
-\begin{algorithmic}[1]
-\Require señales por línea del periodo de ajuste
-\Ensure umbrales de alerta
-\ForAll{señal en \{acumulado de la semana, tamaño de la línea\}}
-    \State ordenar los valores de mayor a menor
-    \State elegir el umbral que deja como máximo 4 alertas por semana
-\EndFor
-\State aplicar los umbrales sin cambios al periodo de validación
-\State \Return umbrales
-\end{algorithmic}
-\end{algorithm}
-
 
 \subsection{Árbol de decisión y ventana del programa}
 
@@ -221,4 +162,4 @@ Este anexo documenta el prototipo construido en las semanas 1 a 6. El prototipo 
 \end{algorithmic}
 \end{algorithm}
 
-Las Figuras~\ref{fig:app-entrenar} y~\ref{fig:app-revisar} de la Sección~\ref{sec:av-arbol} muestran estas dos pantallas en funcionamiento.
+La Figura~\ref{fig:app-revisar} de la Sección~\ref{sec:av-arbol} muestra la pantalla de revisión en funcionamiento.

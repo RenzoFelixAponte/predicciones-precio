@@ -1,0 +1,30 @@
+% Ajustes de formato solo para el informe final (más compacto, mismo contenido)
+\geometry{top=2.2cm,bottom=2.2cm,left=2.2cm,right=2.2cm}
+\usepackage[font=small,labelfont=bf,skip=4pt]{caption}
+\setlength{\parskip}{0.2em}
+\renewcommand{\arraystretch}{1.08}
+\setlength{\textfloatsep}{10pt plus 2pt minus 2pt}
+\setlength{\floatsep}{8pt plus 2pt minus 2pt}
+\setlength{\intextsep}{8pt plus 2pt minus 2pt}
+\setlist{itemsep=1pt,topsep=3pt,parsep=0pt}
+\setcounter{tocdepth}{2}
+\usepackage{subcaption}
+\usepackage{etoolbox}
+\AtBeginEnvironment{algorithmic}{\footnotesize}
+\AtBeginEnvironment{thebibliography}{\footnotesize}
+\AtEndPreamble{\let\olditem\item}
+\makeatletter
+\renewcommand{\@biblabel}[1]{[#1]}
+\makeatother
+\AtBeginEnvironment{thebibliography}{\setlength{\itemsep}{0pt}\setlength{\parsep}{0pt}}
+\setcounter{tocdepth}{1}
+\linespread{0.97}
+\let\tocoriginal\tableofcontents
+\renewcommand{\tableofcontents}{{\small\tocoriginal}}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.8}
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{5}

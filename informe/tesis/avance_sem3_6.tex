@@ -7,7 +7,7 @@
 \section{Avance del proyecto}
 \label{sec:avance}
 
-Entre la tercera y la sexta semana se completaron los pasos 2, 3 y 4 del plan de trabajo (Tabla~\ref{tab:pasos}) y se revisaron las cifras del paso 1. El avance ya incorpora las observaciones del asesor resumidas en la Sección~\ref{sec:retro}, y los primeros apartados explican cómo se aplicó cada una.
+Entre la tercera y la sexta semana se completaron los pasos 2, 3 y 4 del plan de trabajo (Sección~\ref{sec:cronograma}) y se revisaron las cifras del paso 1. El avance ya incorpora las observaciones del asesor resumidas en la Sección~\ref{sec:retro}, y los primeros apartados explican cómo se aplicó cada una.
 
 Los resultados se obtuvieron con un programa en Python que lee el archivo exportado del sistema de compras sin modificarlo, por lo que pueden repetirse con cualquier exportación del mismo formato. Las capturas de los archivos de salida y del código están en el Anexo~\ref{sec:anexo}. Como se trabajó con pocas semanas y con etiquetas aún no confirmadas, los resultados son preliminares.
 
@@ -51,12 +51,12 @@ En el archivo, cada línea se registra en promedio cinco días antes de su fecha
 \toprule
 \textbf{Variable} & \textbf{Qué significa (ejemplo)} & \textbf{¿Disponible al alertar?} & \textbf{Tratamiento} \\
 \midrule
-Referencia de la tienda & Lo que esa tienda suele pedir de ese producto en una semana, calculado como la mediana de sus últimas cuatro semanas. \emph{Ej.: en las cuatro semanas previas al 17 de agosto, ATE pidió 216, 126, 108 y 108 panes grandes; su referencia (la mediana) es 117.} & Sí & Se calcula solo con semanas anteriores \\
-Variación frente a la semana anterior & Cuánto cambió el pedido respecto de la semana pasada. \emph{Ej.: de 120 a 240 unidades es una variación de +100\,\%.} & Sí & Sin cambios \\
-Línea duplicada & Indica si la tienda tiene dos líneas iguales, con el mismo producto, misma fecha de entrega y misma cantidad. Suele ser el mismo pedido cargado dos veces. \emph{Ej.: dos líneas de 180 panes junior para el 05/09.} & Sí, parcialmente & Solo se compara con las líneas ya registradas \\
-Peso del producto en el pedido & Qué parte del pedido total de la tienda corresponde a ese producto, comparada con lo usual. \emph{Ej.: el pan grande suele ser el 20\,\% del pedido y esta semana es el 50\,\%.} & Parcialmente & Con lo registrado hasta ese momento \\
+Referencia de la tienda & Lo que esa tienda suele pedir de ese producto en una semana, calculado como la mediana de sus últimas cuatro semanas. \emph{Por ejemplo, en las cuatro semanas previas al 17 de agosto, ATE pidió 216, 126, 108 y 108 panes grandes; su referencia (la mediana) es 117.} & Sí & Se calcula solo con semanas anteriores \\
+Variación frente a la semana anterior & Cuánto cambió el pedido respecto de la semana pasada. \emph{Por ejemplo, de 120 a 240 unidades es una variación de +100\,\%.} & Sí & Sin cambios \\
+Línea duplicada & Indica si la tienda tiene dos líneas iguales, con el mismo producto, misma fecha de entrega y misma cantidad. Suele ser el mismo pedido cargado dos veces. \emph{Por ejemplo, dos líneas de 180 panes junior para el 05/09.} & Sí, parcialmente & Solo se compara con las líneas ya registradas \\
+Peso del producto en el pedido & Qué parte del pedido total de la tienda corresponde a ese producto, comparada con lo usual. \emph{Por ejemplo, el pan grande suele ser el 20\,\% del pedido y esta semana es el 50\,\%.} & Parcialmente & Con lo registrado hasta ese momento \\
 Presentaciones que suben juntas & Cuántas de las tres presentaciones (grande, mediano y junior) subieron más de 30\,\% en la misma tienda y semana. Si suben las tres, suele ser demanda real; si sube una sola, es más sospechoso. & Parcialmente & Con lo registrado hasta ese momento \\
-Movimiento común de la cadena & Cuánto subieron o bajaron en promedio todas las tiendas esa semana. Permite distinguir un feriado, en que suben todas, de un error, en que sube una sola. \emph{Ej.: en Fiestas Patrias toda la cadena subió alrededor de 11\,\%.} & Parcialmente & Con las tiendas que ya registraron su pedido \\
+Movimiento común de la cadena & Cuánto subieron o bajaron en promedio todas las tiendas esa semana. Permite distinguir un feriado, en que suben todas, de un error, en que sube una sola. \emph{Por ejemplo, en Fiestas Patrias toda la cadena subió alrededor de 11\,\%.} & Parcialmente & Con las tiendas que ya registraron su pedido \\
 Lo que la tienda pide la semana siguiente & Si el pedido alto se repite o vuelve a lo normal la semana después. Ayudó en el análisis, pero ese dato todavía no existe cuando hay que alertar. & \textbf{No} & Solo para análisis retrospectivo; fuera del modelo \\
 \bottomrule
 \end{tabularx}
@@ -149,13 +149,6 @@ Las observaciones evaluables bajan de 1\,554 a 1\,371 porque se excluyó la últ
 
 Para cada tienda, producto y semana se calcularon las ocho señales de la Tabla~\ref{tab:variables}. Estas indican cuánto se aleja el pedido de lo que la tienda suele pedir, cuánto cambió frente a la semana anterior, si hay una línea repetida, si subieron las tres presentaciones y si toda la cadena se movió en la misma dirección. Esta versión usa semanas completas; la versión por pedido se describe en la Sección~\ref{sec:av-por-pedido}.
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{xl_02_senales.png}
-\caption{Captura de \texttt{salidas/02\_senales.xlsx} abierto en Excel, con una fila por tienda, producto y semana con sus señales. El procedimiento que la genera está en el Algoritmo~\ref{alg:senales}.}
-\label{fig:av-cap-senales}
-\end{figure}
-
 La tabla tiene 1\,371 filas evaluables. La semana del 27 de julio vuelve a mostrar un alza de toda la cadena, que coincide con Fiestas Patrias. La semana del 13 de julio muestra el mismo comportamiento sin un motivo conocido, y se consultará al área de planeamiento. El pedido de ATE del 17 de agosto vuelve a aparecer marcado.
 
 \subsection{Paso 3: casos sospechosos y su validación}
@@ -211,7 +204,7 @@ Las dos primeras reglas usan umbrales fijos y la tercera se ajustó con el perio
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.85\textwidth]{fig_06_alertas_semana.png}
+\includegraphics[width=0.72\textwidth]{fig_06_alertas_semana.png}
 \caption{Número de alertas por semana de cada regla. La franja sombreada marca el volumen que el analista puede revisar; las líneas verticales marcan el inicio de la validación y de la prueba.}
 \label{fig:av-alertas}
 \end{figure}
@@ -222,13 +215,6 @@ La regla de la semana anterior y la del método sin ejemplos se mantienen casi s
 \label{sec:av-por-pedido}
 
 Se programó una primera versión que evalúa cada línea en el momento de su registro, con las tres comparaciones de la Sección~\ref{sec:av-pedido}. Cada línea se compara solo con las semanas anteriores y con las líneas de la misma semana ya registradas. Los umbrales se fijaron con el periodo de ajuste, buscando unas cuatro alertas por semana. Con ellos, la comparación del acumulado de la semana emitió 4,0 alertas por semana en ese periodo, la del tamaño de la línea 3,3 y la combinación de ambas con la línea duplicada 13,5.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{xl_05_alertas.png}
-\caption{Captura de la hoja \texttt{alertas} de \texttt{salidas/05\_alertas\_pedido.xlsx}. Cada fila es una alerta emitida en la primera línea que la dispara, con su fecha de registro, su fecha de entrega y los días de anticipación.}
-\label{fig:xl-alertas}
-\end{figure}
 
 Como cada alerta se emite cuando se registra la línea, también se conoce con cuánta anticipación llega. En el caso de ATE, la línea de 396 unidades se registró el 19 de agosto para entregarse el 22, y la alerta se habría emitido tres días antes del despacho.
 
@@ -261,14 +247,7 @@ Como en el periodo de ajuste hay solo 4 casos de error, estas cifras describen c
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.75\textwidth]{app_entrenar.png}
-\caption{Ventana de entrenamiento del prototipo, con los datos usados, cantidad de errores etiquetados y reglas aprendidas por el árbol.}
-\label{fig:app-entrenar}
-\end{figure}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{app_revisar.png}
+\includegraphics[width=0.8\textwidth]{app_revisar.png}
 \caption{Ventana de revisión del prototipo, con las líneas marcadas por el árbol en las últimas semanas del extracto, con su nivel, la probabilidad de la hoja y la regla en palabras.}
 \label{fig:app-revisar}
 \end{figure}

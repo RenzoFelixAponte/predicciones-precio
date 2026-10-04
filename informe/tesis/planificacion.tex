@@ -55,7 +55,7 @@ El software tiene dos partes (Figura~\ref{fig:arquitectura}). La parte visible e
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{arquitectura.png}
+\includegraphics[width=0.78\textwidth]{arquitectura.png}
 \caption{Arquitectura del software. La ventana (arriba) llama al análisis (abajo); el árbol se entrena con el Excel de revisión y se guarda para usarlo en cada revisión.}
 \label{fig:arquitectura}
 \end{figure}
@@ -117,15 +117,8 @@ Para no revisar las 1\,371 combinaciones de tienda, producto y semana, el progra
 
 \begin{enumerate}
 \item \textbf{Hoja de revisión.} En la columna \texttt{etiqueta} de \texttt{03\_marcado.xlsx} se escribe, para cada caso, \emph{error}, \emph{normal} o \emph{duda} (Figura~\ref{fig:av-cap-marcado}). Mientras un caso no se revise, el programa usa su propuesta como etiqueta provisional.
-\item \textbf{Lista de líneas con error.} Cada línea del archivo original tiene un identificador único, formado por el número de orden de compra y la posición (\texttt{Documento compras} y \texttt{Posición}). Si la autora sabe con certeza qué líneas fueron error, por ejemplo por un correo de alerta, basta con anotar sus identificadores en un Excel con la columna \texttt{id\_linea} (Figura~\ref{fig:xl-ids}). Esta forma es más precisa, porque marca la línea exacta y no la semana completa.
+\item \textbf{Lista de líneas con error.} Cada línea del archivo original tiene un identificador único, formado por el número de orden de compra y la posición (\texttt{Documento compras} y \texttt{Posición}). Si la autora sabe con certeza qué líneas fueron error, por ejemplo por un correo de alerta, basta con anotar sus identificadores en un Excel con la columna \texttt{id\_linea}, por ejemplo \texttt{4500726891-370} para la línea de ATE del 22 de agosto. Esta forma es más precisa, porque marca la línea exacta y no la semana completa.
 \end{enumerate}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.85\textwidth]{xl_06_errores_ids.png}
-\caption{Archivo \texttt{errores\_confirmados.xlsx}, con la lista de líneas con error identificadas por orden y posición. El ejemplo es la línea de ATE del 22 de agosto (396 unidades), confirmada por el correo de la Figura~\ref{fig:correo2}.}
-\label{fig:xl-ids}
-\end{figure}
 
 Los casos marcados como \emph{duda} no se usan para entrenar ni para evaluar. La cantidad de etiquetas determina qué tan fino puede ser el árbol, ya que con profundidad 4 puede llegar a tener 16 hojas y cada una necesita al menos 5 líneas. Por eso la meta es reunir al menos 20 errores confirmados antes de tomar el árbol como definitivo. Hoy hay un solo error confirmado y el resto de etiquetas son propuestas del programa, por lo que los resultados del árbol son preliminares. Cada alerta que la autora confirme o descarte se suma a la hoja de revisión, y el árbol puede volver a entrenarse con esa información.
 
@@ -135,7 +128,7 @@ La Figura~\ref{fig:edt} descompone el proyecto en cinco entregables y diecinueve
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{edt.png}
+\includegraphics[width=0.8\textwidth]{edt.png}
 \caption{Estructura de desglose del trabajo (EDT) del proyecto.}
 \label{fig:edt}
 \end{figure}
@@ -200,11 +193,11 @@ Al cierre de la semana 12 se espera contar con tres resultados. El primero es un
 
 \subsection{Diagrama de Gantt preliminar}
 
-El proyecto se organiza en doce semanas. La Figura~\ref{fig:gantt} muestra las tareas, su duración y su estado al cierre de la semana 6. El detalle de cada paso se encuentra en la Tabla~\ref{tab:pasos}.
+El proyecto se organiza en doce semanas. La Figura~\ref{fig:gantt} muestra las tareas, su duración y su estado al cierre de la semana 6. El detalle de cada paquete se encuentra en la Tabla~\ref{tab:paquetes}.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{gantt.png}
+\includegraphics[width=0.82\textwidth]{gantt.png}
 \caption{Diagrama de Gantt preliminar. Las barras oscuras están completadas; la línea vertical marca el corte de este avance.}
 \label{fig:gantt}
 \end{figure}
@@ -313,7 +306,7 @@ La Figura~\ref{fig:matriz} ubica los ocho riesgos según su probabilidad e impac
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.55\textwidth]{matriz_riesgos.png}
+\includegraphics[width=0.42\textwidth]{matriz_riesgos.png}
 \caption{Matriz de probabilidad e impacto. Los riesgos en rojo requieren respuesta inmediata; los ámbar, seguimiento semanal.}
 \label{fig:matriz}
 \end{figure}
