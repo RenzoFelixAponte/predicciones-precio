@@ -7,7 +7,8 @@ $capturas = @(
     @{ archivo = "salidas\01_limpio.xlsx";        hoja = "resumen";              rango = "A1:B17"; png = "xl_01_resumen.png" },
     @{ archivo = "salidas\01_limpio.xlsx";        hoja = "rectificadas";         rango = "A1:J12"; png = "xl_01_rectificadas.png" },
     @{ archivo = "salidas\02_senales.xlsx";       hoja = 1;                      rango = "A1:P16"; png = "xl_02_senales.png" },
-    @{ archivo = "salidas\03_marcado.xlsx";       hoja = "candidatos";           rango = "A1:Q16"; png = "xl_03_marcado.png" },
+    @{ archivo = "salidas\03_marcado.xlsx";       hoja = "revision";             rango = "A1:L14"; png = "xl_03_marcado.png" },
+    @{ archivo = "salidas\errores_confirmados.xlsx"; hoja = 1;                   rango = "A1:E2";  png = "xl_06_errores_ids.png" },
     @{ archivo = "salidas\04_reglas.xlsx";        hoja = "metricas";             rango = "A1:I10"; png = "xl_04_metricas.png" },
     @{ archivo = "salidas\05_alertas_pedido.xlsx"; hoja = "metricas_por_periodo"; rango = "A1:K7";  png = "xl_05_metricas_pedido.png" },
     @{ archivo = "salidas\05_alertas_pedido.xlsx"; hoja = "alertas";              rango = "A1:R14"; png = "xl_05_alertas.png" }

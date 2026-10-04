@@ -22,13 +22,13 @@ sys.path.insert(0, str(Path(__file__).parent))
 import pipeline as P
 
 OUT = P.OUT
-FIN_AJUSTE, FIN_VALID = pd.Timestamp("2026-08-10"), pd.Timestamp("2026-08-31")
+FIN_AJUSTE, FIN_VALID = P.FIN_AJUSTE, P.FIN_VALID
 TAU_ACUM, TAU_LINEA = 0.8, 3.0          # acumulado > ref·(1+τ); línea > τ·mediana de líneas previas
 CONFIRMADOS = {("BB TDA PV ATE", 201985, pd.Timestamp("2026-08-17"))}   # correo, Figura 3
 
 
 def periodo(semana):
-    return np.where(semana <= FIN_AJUSTE, "ajuste", np.where(semana <= FIN_VALID, "validación", "prueba"))
+    return P.periodo(semana)
 
 
 def senales_por_linea(viva):

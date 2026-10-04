@@ -20,6 +20,13 @@ from sklearn.ensemble import IsolationForest
 from sklearn.metrics import precision_score, recall_score, f1_score
 
 K, TAU, KAPPA, Z_UMBRAL, DPREV_UMBRAL = 4, 0.8, 0.10, 3.5, 1.0
+# Periodos (semana de entrega): ajuste para construir, validación para elegir parámetros,
+# prueba (dos últimas semanas completas) para medir una sola vez al final.
+FIN_AJUSTE, FIN_VALID = pd.Timestamp("2026-08-03"), pd.Timestamp("2026-08-17")
+
+
+def periodo(semana):
+    return np.where(semana <= FIN_AJUSTE, "ajuste", np.where(semana <= FIN_VALID, "validación", "prueba"))
 OUT = Path("salidas")
 OUT.mkdir(exist_ok=True)
 plt.rcParams.update({"figure.dpi": 130, "axes.spines.top": False, "axes.spines.right": False,
@@ -131,9 +138,8 @@ def candidatos(s, rectif):
 
 # ---------------------------------------------------------------- Paso 4
 def reglas(ev):
-    semanas = sorted(ev["semana"].unique())
-    corte = semanas[-3]                         # validación temporal: últimas 3 semanas
-    tr, te = ev[ev["semana"] < corte], ev[ev["semana"] >= corte]
+    ev["periodo"] = periodo(ev["semana"])
+    tr = ev[ev["periodo"] == "ajuste"]
     X = ["e_t", "z_rob", "d_prev", "rho_mix"]
     iso = IsolationForest(n_estimators=300, contamination=max(tr["y"].mean(), 0.005),
                           random_state=0).fit(tr[X].fillna(0))
@@ -144,7 +150,7 @@ def reglas(ev):
     }
     filas, semanal = [], []
     for nom, f in pred.items():
-        for parte, d in [("entrenamiento", tr), ("validación (3 últimas sem.)", te), ("total", ev)]:
+        for parte, d in [(p, ev[ev["periodo"] == p]) for p in ("ajuste", "validación", "prueba")]:
             p = f(d)
             filas.append({"regla": nom, "conjunto": parte, "alertas": int(p.sum()),
                           "errores_reales": int(d["y"].sum()),
@@ -159,7 +165,7 @@ def reglas(ev):
             "alertas": d[nom].sum(), "aciertos": (d[nom] & d["y"]).sum()}), include_groups=False)
         w["regla"] = nom
         semanal.append(w.reset_index())
-    return pd.DataFrame(filas), pd.concat(semanal), list(pred), corte
+    return pd.DataFrame(filas), pd.concat(semanal), list(pred), (FIN_AJUSTE, FIN_VALID)
 
 
 def prueba_rectificadas(s, rectif):
@@ -215,14 +221,14 @@ def figuras(viva, s, ev, cand, res, semanal, nombres, corte):
     fig.tight_layout(); fig.savefig(OUT / "fig_04_candidatos.png"); plt.close()
 
     # 5 comparación de reglas (prueba)
-    r = res[res["conjunto"] == "validación (3 últimas sem.)"].set_index("regla")
+    r = res[res["conjunto"] == "prueba"].set_index("regla")
     fig, ax = plt.subplots(figsize=(7, 2.8))
     x = np.arange(len(r)); wd = .38
     ax.bar(x - wd / 2, r["precision"], wd, color=AZUL, label="precisión")
     ax.bar(x + wd / 2, r["exhaustividad"], wd, color=GRIS, label="exhaustividad")
     ax.axhline(.7, color=AZUL, ls=":", lw=1); ax.axhline(.8, color=GRIS, ls=":", lw=1)
     ax.set_xticks(x, r.index); ax.set_ylim(0, 1.05); ax.legend(frameon=False, ncol=2)
-    ax.set_title(f"Reglas simples en validación (semanas desde {corte:%d-%m})  · metas 70 % / 80 %", loc="left")
+    ax.set_title("Reglas sencillas en el periodo de prueba (24 y 31 de agosto) · metas 70 % / 80 %", loc="left")
     fig.tight_layout(); fig.savefig(OUT / "fig_05_reglas.png"); plt.close()
 
     # 6 alertas por semana por regla
@@ -230,9 +236,41 @@ def figuras(viva, s, ev, cand, res, semanal, nombres, corte):
     for nom, col in zip(nombres, [AZUL, ROJO, GRIS]):
         d = semanal[semanal["regla"] == nom]
         ax.plot(d["semana"], d["alertas"], "o-", color=col, label=nom)
-    ax.axhspan(2, 5, color="#2a6fb0", alpha=.08); ax.axvline(corte, color="k", lw=.6, ls="--")
+    ax.axhspan(2, 5, color="#2a6fb0", alpha=.08)
+    for c, txt in zip(corte, ("validación", "prueba")):
+        ax.axvline(c + pd.Timedelta(days=3.5), color="k", lw=.6, ls="--")
+        ax.text(c + pd.Timedelta(days=4), ax.get_ylim()[1] * .92, txt, fontsize=7)
     ax.legend(frameon=False, fontsize=7); ax.set_title("Alertas por semana (banda = 2 a 5 aceptables)", loc="left")
     fig.tight_layout(); fig.savefig(OUT / "fig_06_alertas_semana.png"); plt.close()
+
+
+def hoja_revision(cand, viva):
+    """Hoja para que la autora etiquete: solo los casos sospechosos, con columnas legibles
+    y los identificadores (orden-posición) de las líneas de cada caso."""
+    ids = (viva.assign(id_linea=viva["orden"].astype(str) + "-" + viva["pos"].astype(str))
+               .groupby(["Tienda", "Material", "semana"])["id_linea"].apply(", ".join).reset_index())
+    c = cand.merge(ids, on=["Tienda", "Material", "semana"], how="left")
+    pct = lambda x: f"{x:+.0%}".replace("%", " %")
+    motivo = {"alza propia u_t>τ": lambda r: f"Subió solo esta tienda ({pct(r.e_t)} sobre lo habitual)",
+              "duplicidad": lambda r: "Línea duplicada (misma fecha y cantidad)",
+              "duplicidad + alza": lambda r: f"Línea duplicada y alza ({pct(r.e_t)})",
+              "caída fuerte": lambda r: f"Caída brusca ({pct(r.e_t)} bajo lo habitual)"}
+    h = pd.DataFrame({
+        "caso": "",
+        "Tienda": c["Tienda"], "Material": c["Material"],
+        "Producto": c["Material"].map(NOMBRE),
+        "semana": c["semana"],
+        "Pedido de la semana": c["q"].round(0), "Lo habitual": c["q_ref"].round(0),
+        "Motivo": [motivo[m](r) for m, r in zip(c["motivo_candidato"], c.itertuples())],
+        "ID de las líneas (orden-posición)": c["id_linea"],
+        "propuesta": c["etiqueta_propuesta"].map({"error": "posible error", "normal": "probablemente normal"}),
+        "etiqueta": "",
+        "evidencia": c["fuente"].where(c["fuente"] != "regla de candidato", ""),
+    })
+    h.loc[c["fuente"].eq("correo Fig. 3").values, "etiqueta"] = "error"
+    h = h.sort_values(["propuesta", "Pedido de la semana"], ascending=[True, False]).reset_index(drop=True)
+    h["caso"] = [f"C{i + 1:02d}" for i in range(len(h))]
+    return h
 
 
 def formatear(ruta):
@@ -255,13 +293,15 @@ def formatear(ruta):
                 elif isinstance(c.value, float):
                     c.number_format = "0.00"
         cab = [c.value for c in ws[1]]
-        if "etiqueta_final" in cab:
-            L = ws.cell(1, cab.index("etiqueta_final") + 1).column_letter
+        col_et = next((x for x in ("etiqueta", "etiqueta_final") if x in cab), None)
+        col_pr = next((x for x in ("propuesta", "etiqueta_propuesta") if x in cab), None)
+        if col_et:
+            L = ws.cell(1, cab.index(col_et) + 1).column_letter
             dv = DataValidation(type="list", formula1='"error,normal,duda"', allow_blank=True)
             ws.add_data_validation(dv); dv.add(f"{L}2:{L}{ws.max_row}")
             rojo = PatternFill("solid", fgColor="F8D7D3")
             for fila in ws.iter_rows(min_row=2):
-                if fila[cab.index("etiqueta_propuesta")].value == "error":
+                if fila[cab.index(col_pr)].value in ("error", "posible error"):
                     for c in fila: c.fill = rojo
     wb.save(ruta)
 
@@ -290,7 +330,8 @@ def main(ruta):
                  "rectificada", "motivo_candidato", "etiqueta_propuesta", "confianza", "fuente",
                  "etiqueta_final", "comentario_revision"]
     with pd.ExcelWriter(OUT / "03_marcado.xlsx") as w:
-        cand.sort_values("u_t", ascending=False)[cand_cols].to_excel(w, "candidatos", index=False)
+        hoja_revision(cand, viva).to_excel(w, "revision", index=False)
+        cand.sort_values("u_t", ascending=False)[cand_cols].to_excel(w, "detalle_tecnico", index=False)
     with pd.ExcelWriter(OUT / "04_reglas.xlsx") as w:
         res.to_excel(w, "metricas", index=False)
         semanal.to_excel(w, "alertas_semana", index=False)

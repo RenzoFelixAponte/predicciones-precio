@@ -4,10 +4,10 @@
 %  Incorpora la retroalimentación del asesor sobre el Entregable 1.
 % ============================================================
 
-\section{Avance del proyecto: semanas 3 a 6}
+\section{Avance del proyecto}
 \label{sec:avance}
 
-Entre la tercera y la sexta semana se completaron los pasos 2, 3 y 4 del plan de trabajo (Tabla~\ref{tab:pasos}) y se revisaron las cifras del paso 1. En el mismo periodo se recibieron las observaciones del asesor sobre el primer entregable. Como varias de ellas cambian la forma de leer los resultados, se presentan primero.
+Entre la tercera y la sexta semana se completaron los pasos 2, 3 y 4 del plan de trabajo (Tabla~\ref{tab:pasos}) y se revisaron las cifras del paso 1. El avance ya incorpora las observaciones del asesor resumidas en la Sección~\ref{sec:retro}, y los primeros apartados explican cómo se aplicó cada una.
 
 Los resultados se obtuvieron con un programa en Python que lee el archivo exportado del sistema de compras sin modificarlo, por lo que pueden repetirse con cualquier exportación del mismo formato. Las capturas de los archivos de salida y del código están en el Anexo~\ref{sec:anexo}. Como se trabajó con pocas semanas y con etiquetas aún no confirmadas, los resultados son preliminares.
 
@@ -27,7 +27,7 @@ El asesor señaló seis aspectos, resumidos en la Tabla~\ref{tab:av-retro}; los 
 \textbf{Observación} & \textbf{Cómo se incorpora} \\
 \midrule
 Cada variable debe conocerse en el momento de emitir la alerta, antes del despacho & Se clasifican las variables según cuándo están disponibles y se excluyen del modelo las que usan información posterior (Sección~\ref{sec:av-tiempo}) \\
-Distinguir una desviación respecto del historial de un error confirmado & Se adopta una terminología de tres niveles: desviación, caso sospechoso y error confirmado (Sección~\ref{sec:av-terminos}) \\
+Distinguir una desviación respecto del historial de un error confirmado & Se adopta una terminología de tres niveles, que son desviación, caso sospechoso y error confirmado (Sección~\ref{sec:av-terminos}) \\
 Distinguir el valor potencial en riesgo de una pérdida efectivamente ocurrida & La cifra de S/~3\,200 mensuales se presenta como valor potencial en riesgo, no como pérdida (Sección~\ref{sec:av-terminos}) \\
 Validar las etiquetas con evidencia operativa, pues una modificación puede ser legítima & Las líneas rectificadas dejan de considerarse errores automáticamente y cada etiqueta exige una fuente documentada (Sección~\ref{sec:av-marcado}) \\
 Explicar el paso del análisis semanal a alertas por pedido & Se describe el procedimiento para evaluar cada línea en el momento en que se registra (Sección~\ref{sec:av-pedido}) \\
@@ -40,39 +40,46 @@ Reservar un periodo independiente de evaluación y moderar las conclusiones & Se
 \subsubsection{Qué información existe en el momento de alertar}
 \label{sec:av-tiempo}
 
-Si el objetivo es alertar antes del despacho, el método solo puede usar lo que se sabe en ese momento. En el archivo, cada línea se registra en promedio cinco días antes de su fecha de entrega, y el 80\,\% se registra con menos de una semana de anticipación. Esto significa que, cuando se registra una línea, todavía no se conocen las demás líneas que la misma tienda cargará esa semana, ni lo que pedirá la semana siguiente. La Tabla~\ref{tab:av-disponibilidad} clasifica las variables según este criterio.
+En el archivo, cada línea se registra en promedio cinco días antes de su fecha de entrega, y el 80\,\% se registra con menos de una semana de anticipación. Esto significa que, cuando se registra una línea, todavía no se conocen las demás líneas que la misma tienda cargará esa semana, ni lo que pedirá la semana siguiente. La Tabla~\ref{tab:av-disponibilidad} explica qué significa cada variable y si está disponible en ese momento.
 
 \begin{table}[htbp]
 \centering
-\caption{Disponibilidad de cada variable en el momento de emitir la alerta.}
+\caption{Variables del método, su significado y su disponibilidad al emitir la alerta.}
 \label{tab:av-disponibilidad}
-\small
-\begin{tabularx}{\textwidth}{@{}L{4.6cm}L{2.6cm}Y@{}}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}L{2.7cm}YL{1.6cm}L{3.1cm}@{}}
 \toprule
-\textbf{Variable} & \textbf{¿Disponible al alertar?} & \textbf{Tratamiento} \\
+\textbf{Variable} & \textbf{Qué significa (ejemplo)} & \textbf{¿Disponible al alertar?} & \textbf{Tratamiento} \\
 \midrule
-Referencia de la tienda (semanas previas) & Sí & Se calcula solo con entregas ya realizadas \\
-Variación frente a la semana anterior & Sí & Sin cambios \\
-Línea duplicada & Sí, parcialmente & Se compara con las líneas ya registradas hasta ese momento \\
-Peso del producto en el pedido de la tienda & Parcialmente & Se calcula con lo registrado hasta ese momento \\
-Presentaciones que suben juntas & Parcialmente & Se calcula con lo registrado hasta ese momento \\
-Movimiento común de la cadena & Parcialmente & Se calcula con las tiendas que ya registraron su pedido \\
-Lo que la tienda pide la semana siguiente & \textbf{No} & Solo para análisis retrospectivo; queda fuera del modelo \\
+Referencia de la tienda & Lo que esa tienda suele pedir de ese producto en una semana, calculado como la mediana de sus últimas cuatro semanas. \emph{Ej.: en las cuatro semanas previas al 17 de agosto, ATE pidió 216, 126, 108 y 108 panes grandes; su referencia (la mediana) es 117.} & Sí & Se calcula solo con semanas anteriores \\
+Variación frente a la semana anterior & Cuánto cambió el pedido respecto de la semana pasada. \emph{Ej.: de 120 a 240 unidades es una variación de +100\,\%.} & Sí & Sin cambios \\
+Línea duplicada & Indica si la tienda tiene dos líneas iguales, con el mismo producto, misma fecha de entrega y misma cantidad. Suele ser el mismo pedido cargado dos veces. \emph{Ej.: dos líneas de 180 panes junior para el 05/09.} & Sí, parcialmente & Solo se compara con las líneas ya registradas \\
+Peso del producto en el pedido & Qué parte del pedido total de la tienda corresponde a ese producto, comparada con lo usual. \emph{Ej.: el pan grande suele ser el 20\,\% del pedido y esta semana es el 50\,\%.} & Parcialmente & Con lo registrado hasta ese momento \\
+Presentaciones que suben juntas & Cuántas de las tres presentaciones (grande, mediano y junior) subieron más de 30\,\% en la misma tienda y semana. Si suben las tres, suele ser demanda real; si sube una sola, es más sospechoso. & Parcialmente & Con lo registrado hasta ese momento \\
+Movimiento común de la cadena & Cuánto subieron o bajaron en promedio todas las tiendas esa semana. Permite distinguir un feriado, en que suben todas, de un error, en que sube una sola. \emph{Ej.: en Fiestas Patrias toda la cadena subió alrededor de 11\,\%.} & Parcialmente & Con las tiendas que ya registraron su pedido \\
+Lo que la tienda pide la semana siguiente & Si el pedido alto se repite o vuelve a lo normal la semana después. Ayudó en el análisis, pero ese dato todavía no existe cuando hay que alertar. & \textbf{No} & Solo para análisis retrospectivo; fuera del modelo \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-Esto afecta a dos elementos del primer entregable. La última fila de la Tabla~\ref{tab:firma} usa el comportamiento de la semana siguiente; sirvió para diferenciar una campaña de un error, pero no puede usarse para alertar. Lo mismo ocurre con el parámetro de reversión de la Tabla~\ref{tab:hiper}, que queda solo para revisar casos pasados. Además, los resultados semanales de esta sección usan semanas completas y son, por ello, más favorables que lo que se obtendría en operación.
+Esto afecta a dos elementos del primer entregable. La última fila de la Tabla~\ref{tab:firma} usa el comportamiento de la semana siguiente; sirvió para diferenciar una campaña de un error, pero no puede usarse para alertar. Lo mismo ocurre con el parámetro de reversión de la Tabla~\ref{tab:hiper}, que queda solo para revisar casos pasados. Además, las reglas semanales de esta sección usan semanas completas, por lo que en operación se reemplazan por la versión por pedido.
 
 \subsubsection{Desviación, caso sospechoso y error confirmado}
 \label{sec:av-terminos}
 
-En el primer entregable se usaron como sinónimos «desviación», «anomalía» y «error». A partir de este avance se usan tres términos distintos:
+En el primer entregable se usaron como sinónimos «desviación», «anomalía» y «error». A partir de este avance se usan tres términos distintos.
 
 \begin{itemize}
-\item \emph{Desviación}: pedido que se aleja del patrón histórico de la tienda. No implica que esté mal; puede deberse a una promoción, a un evento local o a un cambio de necesidad.
-\item \emph{Caso sospechoso}: desviación que, por sus características, se debe revisar.
-\item \emph{Error confirmado}: caso sospechoso respaldado por evidencia operativa, por ejemplo un correo en que el área o la tienda reconoce el error.
+\item \emph{Desviación}. Es un pedido que se aleja del patrón histórico de la tienda. No implica que esté mal; puede deberse a una promoción, a un evento local o a un cambio de necesidad.
+\item \emph{Caso sospechoso}. Es una desviación que se debe revisar porque presenta al menos una de las siguientes características.
+\begin{itemize}
+\item la tienda subió más de 80\,\% sobre su referencia mientras el resto de la cadena no subió (no es feriado ni campaña);
+\item subió una o dos presentaciones, pero no las tres a la vez, lo que no se parece a un aumento real de demanda;
+\item tiene una línea duplicada, con el mismo producto, fecha de entrega y cantidad;
+\item una línea es varias veces más grande que las líneas habituales de esa tienda y producto;
+\item el pedido cayó más de 60\,\% respecto de su referencia, lo que puede indicar un pedido incompleto.
+\end{itemize}
+\item \emph{Error confirmado}. Es un caso sospechoso respaldado por evidencia operativa, por ejemplo un correo en que el área o la tienda reconoce el error.
 \end{itemize}
 
 Con esta distinción, los 17 casos y los S/~3\,200 mensuales de la Tabla~\ref{tab:exceso} corresponden a desviaciones. Esa cifra es un valor potencial en riesgo, es decir, el valor del producto despachado por encima de lo esperado si todas las desviaciones fueran errores. La pérdida real será menor y se podrá estimar cuando se sepa cuántas desviaciones se confirman y qué parte del exceso no se recuperó por otra vía.
@@ -80,7 +87,7 @@ Con esta distinción, los 17 casos y los S/~3\,200 mensuales de la Tabla~\ref{ta
 \subsubsection{Del análisis semanal a la alerta por pedido}
 \label{sec:av-pedido}
 
-El análisis exploratorio agrupó los pedidos por tienda, producto y semana, pero la herramienta final debe evaluar cada línea cuando se registra. Para ello se combinan tres comparaciones:
+El análisis exploratorio agrupó los pedidos por tienda, producto y semana, pero la herramienta final debe evaluar cada línea cuando se registra. Para ello se combinan tres comparaciones.
 
 \begin{enumerate}
 \item La referencia de la tienda sigue siendo semanal y se calcula con las semanas anteriores, que ya se conocen.
@@ -93,56 +100,49 @@ Así, la alerta corresponde a una línea concreta y puede emitirse el mismo día
 \subsubsection{Periodos de ajuste, validación y prueba}
 \label{sec:av-periodos}
 
-Hasta ahora el extracto se dividía en dos partes: hasta el 10 de agosto para ajustar y las tres semanas siguientes para evaluar. Sin embargo, esas tres semanas también se revisaron al definir los casos sospechosos y al estudiar el caso de ATE, así que no son independientes. Se adopta entonces esta división:
+Hasta ahora el extracto se dividía en dos partes, hasta el 10 de agosto para ajustar y las tres semanas siguientes para evaluar. Sin embargo, esas semanas también se revisaron al definir los casos sospechosos, así que no eran del todo independientes. Se adopta entonces una división en tres periodos, que deja las dos últimas semanas completas sin usar hasta el final.
 
 \begin{itemize}
-\item Ajuste (6 de julio al 10 de agosto): para construir el método.
-\item Validación (17 al 31 de agosto): para comparar alternativas y elegir umbrales.
-\item Prueba (extracto posterior al 11 de septiembre): se pedirá al área de planeamiento y solo se usará al final. El desempeño del método se reportará con este periodo.
+\item Ajuste (13 de julio al 3 de agosto), para construir el método y fijar sus umbrales.
+\item Validación (10 y 17 de agosto), para comparar alternativas y elegir parámetros.
+\item Prueba (24 y 31 de agosto), que se mide una sola vez, con el método ya definido.
 \end{itemize}
 
-Por eso, las cifras de la Sección~\ref{sec:av-reglas} se presentan como resultados de validación.
+La semana del 7 de septiembre está incompleta y no se usa. Además, se pedirá al área de planeamiento un extracto posterior al 11 de septiembre para confirmar los resultados con pedidos nuevos. La precisión y la exhaustividad se medirán en el periodo de prueba cuando haya etiquetas confirmadas.
 
 \subsection{Resumen del estado del proyecto}
 \label{sec:av-resumen}
 
-Los productos comprometidos hasta la semana 6 están terminados. Lo que todavía no se puede afirmar es si las alertas alcanzarán la precisión buscada, porque falta confirmar los casos de error. La Tabla~\ref{tab:av-estado} resume la situación.
+El proyecto se encuentra en la semana 6 de 12, y los productos comprometidos hasta esta semana están terminados. Lo que todavía no se puede afirmar es si las alertas alcanzarán la precisión buscada, porque falta confirmar los casos de error. La Tabla~\ref{tab:av-estado} resume la situación.
 
 \begin{table}[htbp]
 \centering
-\caption{Estado del proyecto al cierre de la semana 6. Las cifras de desempeño son de validación y se calcularon con etiquetas aún no confirmadas.}
+\caption{Estado del proyecto al cierre de la semana 6 de 12. La columna «Semana» indica cuándo debe cumplirse cada meta. La precisión y la exhaustividad se medirán en el periodo de prueba cuando haya etiquetas confirmadas.}
 \label{tab:av-estado}
 \small
-\begin{tabularx}{\textwidth}{@{}YL{2.2cm}L{2.4cm}l@{}}
+\begin{tabularx}{\textwidth}{@{}YL{1.9cm}cL{2.3cm}L{2.2cm}@{}}
 \toprule
-\textbf{Aspecto evaluado} & \textbf{Meta} & \textbf{Situación actual} & \textbf{Estado} \\
+\textbf{Aspecto evaluado} & \textbf{Meta} & \textbf{Semana} & \textbf{Situación en la semana 6} & \textbf{Estado} \\
 \midrule
-Productos de los pasos 1 a 4 & 4 de 4 & 4 de 4 & \textcolor{green!50!black}{\textbf{Cumplido}} \\
-Alertas que coinciden con un caso sospechoso & 70\,\% o más & 45\,\% (preliminar) & \textcolor{red!70!black}{\textbf{Lejos}} \\
-Casos sospechosos que el método detecta & 80\,\% o más & 71\,\% (preliminar) & \textcolor{orange!85!black}{\textbf{Cerca}} \\
-Alertas por semana & Entre 2 y 5 & 3,7 & \textcolor{green!50!black}{\textbf{Cumplido}} \\
-Errores confirmados con evidencia operativa & 20 o más & 1 (caso ATE) & \textcolor{red!70!black}{\textbf{Lejos}} \\
+Productos de los pasos 1 a 4 & 4 de 4 & 6 & 4 de 4 & \textcolor{green!50!black}{\textbf{Cumplido}} \\
+Errores confirmados con evidencia operativa & 20 o más & 7 & 1 (caso ATE) & \textcolor{orange!85!black}{\textbf{En camino}} \\
+Alertas por semana (acumulado de la semana) & Entre 2 y 5 & 8 & 4,0 & \textcolor{green!50!black}{\textbf{En rango}} \\
+Alertas que coinciden con un caso sospechoso & 70\,\% o más & 12 & Por medir & \textcolor{orange!85!black}{\textbf{Pendiente}} \\
+Casos sospechosos que el método detecta & 80\,\% o más & 12 & Por medir & \textcolor{orange!85!black}{\textbf{Pendiente}} \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-Por ahora solo hay un error confirmado por escrito (ATE); los demás son casos sospechosos. Hasta que esa cifra aumente, las medidas de desempeño deben tomarse como provisionales.
+Por ahora solo hay un error confirmado por escrito (ATE); los demás son casos sospechosos. Por eso, en esta etapa los métodos se prueban con casos conocidos (Sección~\ref{sec:av-casos}) y la medición de precisión y exhaustividad queda para cuando haya más errores confirmados.
 
 \subsection{Revisión de la limpieza de datos}
 \label{sec:av-limpieza}
 
-El programa de limpieza reprodujo casi todas las cifras de la Sección~\ref{sec:anuladas}: 10\,374 líneas vigentes, 385 anuladas con reemplazo y 119 líneas duplicadas. Cambiaron dos valores.
+El programa de limpieza reprodujo casi todas las cifras de la Sección~\ref{sec:anuladas}, entre ellas 10\,374 líneas vigentes, 385 anuladas con reemplazo y 119 líneas duplicadas. Cambiaron dos valores.
 
 Las líneas anuladas que se reemplazaron por otra cantidad pasan de 27 a 23. Cuando una tienda tiene varias líneas del mismo producto el mismo día, no es evidente cuál reemplazó a cuál; el programa toma la primera según el número de orden y posición.
 
 Las observaciones evaluables bajan de 1\,554 a 1\,371 porque se excluyó la última semana. El archivo termina un viernes y esa semana no tiene los pedidos del sábado, por lo que aparentaba una caída general.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.85\textwidth]{fig_01_unidades_semana.png}
-\caption{Unidades pedidas por semana, considerando solo líneas vigentes. La última barra corresponde a una semana incompleta.}
-\label{fig:av-unidades}
-\end{figure}
 
 \subsection{Paso 2: la tabla de señales}
 \label{sec:av-senales}
@@ -152,25 +152,18 @@ Para cada tienda, producto y semana se calcularon las ocho señales de la Tabla~
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{xl_02_senales.png}
-\caption{Captura de \texttt{salidas/02\_senales.xlsx} abierto en Excel: una fila por tienda, producto y semana con sus señales. El código que la genera se muestra en la Figura~\ref{fig:code-senales}.}
+\caption{Captura de \texttt{salidas/02\_senales.xlsx} abierto en Excel, con una fila por tienda, producto y semana con sus señales. El procedimiento que la genera está en el Algoritmo~\ref{alg:senales}.}
 \label{fig:av-cap-senales}
 \end{figure}
 
-La tabla tiene 1\,371 filas evaluables. La semana del 27 de julio vuelve a mostrar un alza de toda la cadena, que coincide con Fiestas Patrias. La semana del 13 de julio muestra el mismo comportamiento sin un motivo conocido, y se consultará al área de planeamiento. El pedido de ATE del 17 de agosto vuelve a aparecer marcado (Figura~\ref{fig:av-ate}).
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.85\textwidth]{fig_02_caso_ate.png}
-\caption{Tienda de ATE, pan grande. El pedido de la semana del 17 de agosto se aleja de la referencia y coincide con el caso reportado por correo.}
-\label{fig:av-ate}
-\end{figure}
+La tabla tiene 1\,371 filas evaluables. La semana del 27 de julio vuelve a mostrar un alza de toda la cadena, que coincide con Fiestas Patrias. La semana del 13 de julio muestra el mismo comportamiento sin un motivo conocido, y se consultará al área de planeamiento. El pedido de ATE del 17 de agosto vuelve a aparecer marcado.
 
 \subsection{Paso 3: casos sospechosos y su validación}
 \label{sec:av-marcado}
 
-El archivo no indica qué pedidos estuvieron mal, así que la lista de errores se construye en dos pasos: el programa selecciona pedidos sospechosos y propone una etiqueta, y luego cada propuesta se confirma o descarta con evidencia operativa.
+El archivo no indica qué pedidos estuvieron mal, así que la lista de errores se construye en dos pasos. Primero, el programa selecciona pedidos sospechosos y propone una etiqueta. Después, cada propuesta se confirma o descarta con evidencia operativa.
 
-Se seleccionaron 78 pedidos por cuatro motivos: alza solo en esa tienda, línea duplicada, ambas cosas o caída brusca. Se propone como posible error cuando la tienda subió sola, sin que subieran las demás tiendas ni sus otras presentaciones, o cuando hay una línea duplicada con un alza importante (Tabla~\ref{tab:av-candidatos}).
+Se seleccionaron 78 pedidos por tres motivos, que son un alza solo en esa tienda, una línea duplicada o una caída brusca. Se propone como posible error cuando la tienda subió sola, sin que subieran las demás tiendas ni sus otras presentaciones, o cuando hay una línea duplicada con un alza importante (Tabla~\ref{tab:av-candidatos}).
 
 \begin{table}[htbp]
 \centering
@@ -182,8 +175,7 @@ Se seleccionaron 78 pedidos por cuatro motivos: alza solo en esa tienda, línea 
 \textbf{Motivo} & \textbf{Posible error} & \textbf{Probablemente normal} \\
 \midrule
 Alza que solo afectó a la tienda & 8 & 8 \\
-Línea duplicada & 4 & 38 \\
-Línea duplicada con alza & 1 & 0 \\
+Línea duplicada & 5 & 38 \\
 Caída brusca & 0 & 19 \\
 \midrule
 \textbf{Total} & \textbf{13} & \textbf{65} \\
@@ -194,116 +186,141 @@ Caída brusca & 0 & 19 \\
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{xl_03_marcado.png}
-\caption{Captura de \texttt{salidas/03\_marcado.xlsx} en Excel. Las filas en rojo son las propuestas como posible error; la columna \texttt{etiqueta\_final} tiene una lista desplegable para confirmar, descartar o dejar en duda cada caso, y \texttt{fuente} registra la evidencia.}
+\caption{Hoja de revisión \texttt{salidas/03\_marcado.xlsx}. Cada fila es un caso sospechoso con su motivo, lo habitual de la tienda y los identificadores de sus líneas. En rojo, los casos propuestos como posible error; en la columna \texttt{etiqueta} la autora escribe \emph{error}, \emph{normal} o \emph{duda}, y en \texttt{evidencia}, la fuente. El caso C11 (ATE) ya figura como error confirmado.}
 \label{fig:av-cap-marcado}
 \end{figure}
 
-Para confirmar un error se pedirá alguna de estas evidencias: un correo en que el área o la tienda lo reconozca, una corrección del pedido con su motivo o la confirmación de la analista que atendió el caso. Los casos sin evidencia quedarán como «duda» y no se usarán para entrenar ni para evaluar.
+La autora valida cada caso y lo marca como error solo si cuenta con alguna de estas evidencias, como un correo en que el área o la tienda reconozca el error, una corrección del pedido con su motivo o la confirmación de la analista que atendió el caso. Los casos sin evidencia quedan como «duda» y no se usan para entrenar ni para evaluar. La forma de registrar estas etiquetas se describe en la Sección~\ref{sec:etiqueta}.
 
 En el primer entregable se propuso usar como ejemplos de error las líneas que compras anuló y volvió a cargar con otra cantidad. Esta idea se descartó. Como indicó el asesor, cambiar una cantidad puede ser una decisión legítima de la tienda. Además, en 19 de las 23 líneas la cantidad corregida es mayor que la original (por ejemplo, de 18 a 72 unidades), lo que puede deberse tanto a un error de digitación como a que la tienda decidió pedir más. Estas líneas se tratarán como casos sospechosos que requieren evidencia.
 
 También se observó que ninguna de estas correcciones sobresale en el total semanal, porque afectan a una sola línea. Por eso se agregó la comparación por línea descrita en la Sección~\ref{sec:av-pedido}.
 
-\subsection{Paso 4: el punto de partida que el modelo debe superar}
+\subsection{Paso 4: reglas sencillas como referencia}
 \label{sec:av-reglas}
 
-Antes de entrenar el árbol de decisión se midieron tres reglas sencillas, para tener una cifra de referencia que el árbol deberá superar:
+Antes de entrenar el árbol de decisión se programaron tres reglas sencillas, que sirven de referencia para comparar el árbol.
 
 \begin{enumerate}[label=\textbf{R\arabic*.}]
-\item Semana anterior: alerta si el pedido duplica el de la semana previa. Es lo más parecido a lo que hoy hace la analista.
-\item Habitual de la tienda: alerta si el pedido se aleja de lo que la tienda suele pedir más de lo que normalmente varía.
-\item Inusual sin ejemplos: un método (Isolation Forest) que marca pedidos poco comunes sin usar las etiquetas.
+\item Semana anterior. Alerta si el pedido duplica el de la semana previa. Es lo más parecido a lo que hoy hace la analista.
+\item Habitual de la tienda. Alerta si el pedido se aleja de lo que la tienda suele pedir más de lo que normalmente varía.
+\item Inusual sin ejemplos. Es un método llamado Isolation Forest \cite{liu2008}, que no usa las etiquetas. Construye muchos árboles que parten los datos al azar y mide cuántas divisiones hacen falta para dejar aislado cada pedido. Un pedido muy distinto del resto queda aislado con pocas divisiones y se marca como inusual. Su limitación es que detecta lo \emph{raro}, no lo \emph{erróneo}, ya que una tienda grande o una semana de feriado también son raras sin ser errores.
 \end{enumerate}
 
-Las reglas se ajustaron con las semanas hasta el 10 de agosto y se compararon en el periodo de validación (17, 24 y 31 de agosto), que contiene 7 casos propuestos como posible error. La Tabla~\ref{tab:av-reglas} muestra los resultados.
-
-\begin{table}[htbp]
-\centering
-\caption{Resultados de validación de las tres reglas. Los aciertos se cuentan frente a casos propuestos, no frente a errores confirmados.}
-\label{tab:av-reglas}
-\small
-\begin{tabularx}{\textwidth}{@{}YL{1.3cm}L{1.4cm}L{2cm}L{2cm}L{1.5cm}@{}}
-\toprule
-\textbf{Regla} & \textbf{Alertas} & \textbf{Aciertos} & \textbf{Alertas acertadas} & \textbf{Casos detectados} & \textbf{Alertas por semana} \\
-\midrule
-R1. Semana anterior & 7 & 1 & 14\,\% & 14\,\% & 2,3 \\
-R2. Habitual de la tienda & 11 & 5 & \textbf{45\,\%} & \textbf{71\,\%} & 3,7 \\
-R3. Inusual sin ejemplos & 4 & 1 & 25\,\% & 14\,\% & 1,3 \\
-\midrule
-Meta del proyecto & & & 70\,\% o más & 80\,\% o más & 2 a 5 \\
-\bottomrule
-\end{tabularx}
-\end{table}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.85\textwidth]{fig_05_reglas.png}
-\caption{Proporción de alertas acertadas (precisión) y de casos detectados (exhaustividad) en el periodo de validación. Las líneas punteadas indican las metas.}
-\label{fig:av-reglas}
-\end{figure}
+Las dos primeras reglas usan umbrales fijos y la tercera se ajustó con el periodo de ajuste. Como todavía hay un solo error confirmado, en esta etapa no se reporta su precisión, porque con tan pocos casos la cifra no sería concluyente. Se analizan, en cambio, dos aspectos que no dependen de las etiquetas, es decir, cuántas alertas emite cada regla por semana (Figura~\ref{fig:av-alertas}) y cómo se comporta frente a dos casos conocidos (Sección~\ref{sec:av-casos}).
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.85\textwidth]{fig_06_alertas_semana.png}
-\caption{Número de alertas por semana de cada regla. La franja sombreada marca el volumen que el analista puede revisar; la línea vertical separa el periodo de ajuste del de validación.}
+\caption{Número de alertas por semana de cada regla. La franja sombreada marca el volumen que el analista puede revisar; las líneas verticales marcan el inicio de la validación y de la prueba.}
 \label{fig:av-alertas}
 \end{figure}
 
-La regla de la semana anterior coincidió con uno de los siete casos. Una semana previa baja genera falsas alarmas, y un error que se repite dos semanas, como el de ATE, deja de notarse en la segunda.
-
-La regla de lo habitual de la tienda fue la más cercana a la meta y mantuvo un número de alertas manejable. Su problema aparece en la semana de Fiestas Patrias, con 34 alertas (Figura~\ref{fig:av-alertas}), porque no diferencia una tienda que sube sola de toda la cadena subiendo por el feriado. El árbol de decisión podría corregir esto, ya que dispone de la señal de movimiento común.
-
-El método sin ejemplos casi no coincidió con los casos propuestos.
-
-Estas cifras tienen limitaciones. Con 7 casos en validación, un acierto más o menos cambia el resultado en unos diez puntos. La regla que propone las etiquetas y la regla de lo habitual se parecen, lo que puede favorecer a esta última. Y se usaron semanas completas. Por eso el 45\,\% se toma solo como referencia para comparar el árbol.
+La regla de la semana anterior y la del método sin ejemplos se mantienen casi siempre dentro de la franja revisable. La regla de lo habitual de la tienda emite más alertas, y en la semana de Fiestas Patrias llega a 34, porque no diferencia una tienda que sube sola de toda la cadena subiendo por el feriado. El árbol de decisión podría corregir esto, ya que dispone de la señal de movimiento común.
 
 \subsection{Primera versión por pedido}
 \label{sec:av-por-pedido}
 
-Se programó una primera versión que evalúa cada línea en el momento de su registro, con las tres comparaciones de la Sección~\ref{sec:av-pedido}. Cada línea se compara solo con las semanas anteriores y con las líneas de la misma semana ya registradas. Los umbrales se fijaron con el periodo de ajuste, buscando unas cuatro alertas por semana, y se aplicaron sin cambios en validación.
-
-\begin{table}[htbp]
-\centering
-\caption{Versión por pedido en el periodo de validación. Una alerta corresponde a una tienda, producto y semana; se cuenta en la primera línea que la dispara.}
-\label{tab:av-pedido}
-\small
-\begin{tabularx}{\textwidth}{@{}YL{1.3cm}L{1.4cm}L{1.6cm}L{1.6cm}L{1.9cm}@{}}
-\toprule
-\textbf{Regla} & \textbf{Alertas por semana} & \textbf{Alertas acertadas} & \textbf{Casos detectados} & \textbf{Caso ATE detectado} & \textbf{Anticipación (días)} \\
-\midrule
-Acumulado de la semana frente a lo esperado & 6,0 & 6\,\% & 14\,\% & Sí & 5 \\
-Tamaño de la línea frente a las anteriores & 2,0 & 17\,\% & 14\,\% & Sí & 3 \\
-Cualquiera de las anteriores o línea duplicada & 10,3 & 6\,\% & 29\,\% & Sí & 5 \\
-\bottomrule
-\end{tabularx}
-\end{table}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.85\textwidth]{fig_07_reglas_pedido.png}
-\caption{Precisión y exhaustividad de la versión por pedido en el periodo de validación.}
-\label{fig:av-pedido}
-\end{figure}
+Se programó una primera versión que evalúa cada línea en el momento de su registro, con las tres comparaciones de la Sección~\ref{sec:av-pedido}. Cada línea se compara solo con las semanas anteriores y con las líneas de la misma semana ya registradas. Los umbrales se fijaron con el periodo de ajuste, buscando unas cuatro alertas por semana. Con ellos, la comparación del acumulado de la semana emitió 4,0 alertas por semana en ese periodo, la del tamaño de la línea 3,3 y la combinación de ambas con la línea duplicada 13,5.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{xl_05_alertas.png}
-\caption{Captura de la hoja \texttt{alertas} de \texttt{salidas/05\_alertas\_pedido.xlsx}: cada fila es una alerta emitida en la primera línea que la dispara, con su fecha de registro, su fecha de entrega y los días de anticipación.}
+\caption{Captura de la hoja \texttt{alertas} de \texttt{salidas/05\_alertas\_pedido.xlsx}. Cada fila es una alerta emitida en la primera línea que la dispara, con su fecha de registro, su fecha de entrega y los días de anticipación.}
 \label{fig:xl-alertas}
 \end{figure}
 
-Con la información disponible al alertar, la proporción de alertas acertadas baja del 45\,\% de la versión semanal a entre 6\,\% y 17\,\%, tal como advirtió el asesor. Parte de esa caída se debe a que la versión semanal conocía la semana completa. Otra parte se explica porque los casos sospechosos se definieron con semanas completas, lo que perjudica la comparación. Las tres variantes detectan el caso de ATE entre tres y cinco días antes de la entrega.
+Como cada alerta se emite cuando se registra la línea, también se conoce con cuánta anticipación llega. En el caso de ATE, la línea de 396 unidades se registró el 19 de agosto para entregarse el 22, y la alerta se habría emitido tres días antes del despacho.
 
-\subsection{La brecha y la hipótesis de trabajo}
-\label{sec:av-brecha}
+\subsection{Primer entrenamiento del árbol y análisis de parámetros}
+\label{sec:av-arbol}
 
-En validación, el criterio que hoy aplica el área coincide con uno de cada siete casos sospechosos, la mejor regla sencilla con casi la mitad, y la meta es siete de cada diez. Para el paso siguiente se plantea la siguiente hipótesis:
+Con las señales por línea y las etiquetas propuestas se entrenó una primera versión del árbol, conectada a la ventana descrita en la Sección~\ref{sec:arquitectura}. Para analizar el efecto de sus parámetros se entrenaron 24 combinaciones con el periodo de ajuste y se comparó cuántas alertas emite cada una y con qué precisión. La Tabla~\ref{tab:av-parametros} muestra las más representativas.
 
-\begin{quote}
-\emph{Para el analista de planeamiento que revisa los pedidos de las 61 tiendas, un árbol de decisión que tenga en cuenta si toda la cadena se movió y si las tres presentaciones subieron juntas, usando solo información disponible al momento de alertar, elevará la proporción de alertas que coinciden con errores confirmados por encima de la mejor regla sencilla, manteniendo entre dos y cinco alertas por semana, en el periodo de prueba independiente.}
-\end{quote}
+\begin{table}[htbp]
+\centering
+\caption{Análisis de parámetros del árbol entrenado con el periodo de ajuste (33 líneas de error entre 3\,902). Las alertas se cuentan por tienda, producto y semana.}
+\label{tab:av-parametros}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Peso de la clase error} & \textbf{Profundidad} & \textbf{Hojas} & \textbf{Alertas por semana} & \textbf{Precisión} \\
+\midrule
+Balanceado & 2 & 4 & 42,5 & 2\,\% \\
+Balanceado & 5 & 9 & 37,8 & 3\,\% \\
+1 (sin ajuste) & 2 a 5 & 4 a 9 & 1,0 & 75\,\% \\
+\textbf{5} & \textbf{4} & \textbf{7} & \textbf{1,8} & \textbf{57\,\%} \\
+5 (mín. 20 líneas por hoja) & 4 & 5 & 7,5 & 13\,\% \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-Si el árbol no supera a la mejor regla sencilla en ese periodo, la hipótesis se rechaza y, tal como establece el hito del paso 5, la herramienta se construirá sobre esa regla, ajustada para reconocer las semanas en que toda la cadena se mueve.
+La tabla muestra el efecto de cada parámetro. Con el peso balanceado, que iguala la importancia total de errores y normales, el árbol emite unas 40 alertas por semana, demasiadas para revisarlas. Sin ajuste de peso ocurre lo contrario, ya que casi no alerta. Con un peso de 5 y profundidad 4 la carga baja a menos de 2 alertas por semana con 57\,\% de precisión en ajuste. Exigir al menos 20 líneas por hoja vuelve las reglas más generales, pero sube la carga y baja la precisión.
+
+Como en el periodo de ajuste hay solo 4 casos de error, estas cifras describen cómo responde el árbol a cada parámetro, pero todavía no sirven para elegir el mejor por su capacidad de detectar errores nuevos. Por eso los parámetros se fijaron con dos criterios, una carga de alertas revisable y reglas fáciles de leer (profundidad 4, mínimo 5 líneas por hoja y peso 5 para la clase error). Con esos parámetros, el árbol se entrenó con los periodos de ajuste y validación; el periodo de prueba quedó reservado.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.75\textwidth]{app_entrenar.png}
+\caption{Ventana de entrenamiento del prototipo, con los datos usados, cantidad de errores etiquetados y reglas aprendidas por el árbol.}
+\label{fig:app-entrenar}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{app_revisar.png}
+\caption{Ventana de revisión del prototipo, con las líneas marcadas por el árbol en las últimas semanas del extracto, con su nivel, la probabilidad de la hoja y la regla en palabras.}
+\label{fig:app-revisar}
+\end{figure}
+
+\subsection{Prueba con casos conocidos}
+\label{sec:av-casos}
+
+Mientras no haya suficientes errores confirmados, los métodos se prueban con dos casos cuyo resultado se conoce de antemano y que el primer entregable ya comparó en la Tabla~\ref{tab:firma}.
+
+\begin{itemize}
+\item \textbf{ATE, semana del 17 de agosto}. Es un error confirmado por correo. Un buen método \emph{debe} alertar.
+\item \textbf{Fiestas Patrias, semana del 27 de julio}. Es un alza de toda la cadena, que no es error. Un buen método \emph{no debe} llenarse de alertas; esa semana hay 169 combinaciones de tienda y producto.
+\end{itemize}
+
+Para que la prueba sea justa, el árbol se entrenó sin el caso que se evalúa, es decir, sin la semana de ATE para ver si la detecta, y sin la semana de Fiestas Patrias para contar sus alertas. La Tabla~\ref{tab:av-casos} resume el resultado.
+
+\begin{table}[htbp]
+\centering
+\caption{Prueba con casos conocidos. En Fiestas Patrias se cuentan las alertas emitidas, que en ese caso son falsas alarmas.}
+\label{tab:av-casos}
+\small
+\begin{tabularx}{\textwidth}{@{}Ycc@{}}
+\toprule
+\textbf{Método} & \textbf{ATE, 17 de agosto (debe alertar)} & \textbf{Fiestas Patrias (alertas)} \\
+\midrule
+R1. Semana anterior & Sí & 3 \\
+R2. Habitual de la tienda & Sí & 34 \\
+R3. Inusual sin ejemplos & Sí & 3 \\
+\midrule
+Por pedido, acumulado de la semana & \textbf{Sí, 3 días antes} & \textbf{0} \\
+Por pedido, tamaño de la línea & Sí, 3 días antes & 9 \\
+Por pedido, cualquiera o línea duplicada & Sí, 3 días antes & 16 \\
+\midrule
+Árbol de decisión (sin haber visto el caso) & No & 3 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+La comparación del acumulado de la semana es la única que cumple ambas condiciones, ya que detecta el error de ATE tres días antes de la entrega y no emite ninguna alerta en Fiestas Patrias, porque descuenta el movimiento común de la cadena. La regla de lo habitual de la tienda detecta ATE, pero se llena de falsas alarmas en el feriado. El árbol, en cambio, distingue bien el feriado, pero no reconoce el caso de ATE cuando no lo vio durante el entrenamiento. Esto confirma que, con los pocos errores etiquetados que hay hoy, el árbol todavía no aprende un patrón que pueda aplicar a casos nuevos.
+
+\subsection{Qué hace falta para medir el desempeño}
+\label{sec:av-mejoras}
+
+La precisión y la exhaustividad, que son las metas del proyecto, se medirán una sola vez en el periodo de prueba (24 y 31 de agosto), que quedó reservado. Hacerlo hoy no sería concluyente por tres razones. Hay un solo error confirmado. En esas dos semanas hay apenas 5 casos propuestos, de modo que cada acierto movería el resultado 20 puntos. Además, las etiquetas propuestas fueron definidas por el mismo programa. Para que esa medición sea válida hace falta lo siguiente, en este orden.
+
+\begin{enumerate}
+\item \textbf{Ampliar el historial} con el extracto posterior al 11 de septiembre y, si es posible, con meses anteriores a julio, para tener más casos de error de los cuales aprender y con los cuales evaluar.
+\item \textbf{Medir la versión por pedido contra etiquetas por línea}, que es la forma en que esa versión emite sus alertas.
+\item \textbf{Combinar la regla de lo habitual con el filtro de campaña y de presentaciones}, y dar al árbol esa medida como una variable más, para que pueda aprovechar lo que hoy hace bien cada método.
+\end{enumerate}
+
+Ninguna de estas mejoras se ajustará mirando el periodo de prueba, para que su resultado siga siendo una medición independiente.
 
 \iffinal\else
 \subsection{Riesgos observados durante la ejecución}
@@ -358,14 +375,3 @@ G & Evaluar una sola vez sobre el extracto independiente & 1 & A y F & 9 \\
 Respecto del plan original, el hito del paso 5 se desplaza de la semana 7 a la 8, porque la revisión con evidencia y el recálculo de las señales deben completarse antes de entrenar el árbol. Este desplazamiento se absorbe dentro de la semana 8 y no afecta la entrega de la semana 12. La dependencia más frágil es la revisión de casos (B), porque depende de los correos que conserva el área de planeamiento; si se retrasa, la elección del umbral (E) se simplificará comparando solo tres valores posibles.
 
 \fi
-\subsection{Aprendizaje sobre la forma de trabajar}
-\label{sec:av-wow}
-
-La revisión de casos, planificada como manual, pasó a ser asistida: el programa propone una etiqueta y la persona decide con evidencia. Para evitar que las propuestas se acepten sin revisarlas, en la semana 7 se registrará para cada caso la evidencia consultada y si la propuesta se mantuvo o se cambió. Si se cambia más del 30\,\%, se rehará la regla de propuesta; si se cambia menos del 5\,\%, se revisará una muestra con la analista.
-
-\subsection{Síntesis}
-\label{sec:av-sintesis}
-
-Al cierre de la semana 6 se cuenta con un programa que limpia el archivo, calcula las señales de cada pedido, selecciona pedidos sospechosos y mide reglas sencillas. Comparar cada pedido con lo habitual de la tienda dio mejores resultados que compararlo con la semana anterior, aunque falla en semanas de campaña. Usando solo la información disponible al alertar, la precisión baja a entre 6\,\% y 17\,\%, y el caso de ATE se sigue detectando con tres a cinco días de anticipación. Son resultados preliminares, con pocas semanas y casos aún sin confirmar.
-
-Para las semanas siguientes quedan tres condiciones, derivadas de la revisión del asesor: usar solo información disponible al alertar, confirmar cada error con evidencia y medir el resultado final en un periodo no usado para construir el método.

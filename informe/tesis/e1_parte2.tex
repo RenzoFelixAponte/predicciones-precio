@@ -29,7 +29,7 @@ La observación sí amplió el alcance en un punto. Si el software estima la dem
 \iffinal
 \subsection{Segunda revisión del asesor}
 
-La revisión del avance planteó seis observaciones. La Tabla~\ref{tab:av-retro} resume cómo se incorporó cada una y en qué sección se desarrolla. Estas observaciones modificaron tres aspectos del proyecto: qué información puede usar el método, qué se considera un error y sobre qué periodo se mide el desempeño.
+La revisión del avance planteó seis observaciones. La Tabla~\ref{tab:av-retro} resume cómo se incorporó cada una y en qué sección se desarrolla. Estas observaciones modificaron tres aspectos del proyecto, que son qué información puede usar el método, qué se considera un error y sobre qué periodo se mide el desempeño.
 
 \begin{table}[htbp]
 \centering
@@ -41,11 +41,11 @@ La revisión del avance planteó seis observaciones. La Tabla~\ref{tab:av-retro}
 \textbf{Observación} & \textbf{Cambio realizado} & \textbf{Sección} \\
 \midrule
 Cada variable debe conocerse al emitir la alerta & Se clasificaron las variables por disponibilidad y se construyó una versión que evalúa cada línea con lo sabido ese día & \ref{sec:av-tiempo}, \ref{sec:av-por-pedido} \\
-Distinguir desviación de error confirmado & Terminología de tres niveles: desviación, caso sospechoso y error confirmado & \ref{sec:av-terminos} \\
+Distinguir desviación de error confirmado & Terminología de tres niveles, con desviación, caso sospechoso y error confirmado & \ref{sec:av-terminos} \\
 Distinguir valor en riesgo de pérdida ocurrida & Los S/~3\,200 mensuales se presentan como valor potencial en riesgo & \ref{sec:av-terminos}, \ref{sec:datos} \\
 Validar etiquetas con evidencia operativa & Cada error exige una fuente documentada; las modificaciones de cantidad dejan de contarse como errores & \ref{sec:av-marcado} \\
 Pasar del análisis semanal a alertas por pedido & Procedimiento en tres etapas, ya implementado en el prototipo & \ref{sec:av-pedido} \\
-Reservar un periodo independiente y moderar conclusiones & Periodos de ajuste, validación y prueba; las cifras se reportan como preliminares & \ref{sec:av-periodos} \\
+Reservar un periodo independiente y moderar conclusiones & Periodos de ajuste, validación y prueba; la precisión se medirá en prueba con etiquetas confirmadas & \ref{sec:av-periodos} \\
 \bottomrule
 \end{tabularx}
 \end{table}

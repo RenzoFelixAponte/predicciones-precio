@@ -6,14 +6,14 @@
 \finaltrue
 \newcommand{\EntregableTitulo}{Informe de avance}
 \newcommand{\FechaInforme}{4 de octubre de 2026}
-\newcommand{\ResumenInforme}{Bimbo despacha a 61 tiendas Bembos lo que el sistema de compras del cliente le indica, sin ninguna validación previa de que esa cantidad tenga sentido. Cuando la tienda se equivoca al registrar el pedido, el error se convierte en producto despachado. Este informe delimita ese problema sobre 10\,374 líneas de pedido vigentes y propone un software que compare cada pedido con el historial de su tienda y explique por qué lo marca. Tras comparar cuatro alternativas, se selecciona la validación con el historial por ser la única que no requiere cambios en el cliente y que permite justificar cada alerta. Se presentan la estructura del trabajo, el cronograma, un presupuesto preliminar de S/~5\,256 con reservas, los riesgos y los indicadores del proyecto. El avance de las semanas 1 a 6 incluye un prototipo que procesa el archivo original y mide reglas sencillas. Con información de semanas completas, la mejor regla acierta en el 45\,\% de sus alertas; al limitarla a lo que se sabe en el momento de alertar, como recomendó el asesor, ese valor cae a entre 6\,\% y 17\,\%. Aun así, el único error confirmado se detecta entre tres y cinco días antes de la entrega. Estos resultados son preliminares y se validarán con casos confirmados y un periodo de evaluación independiente.}
+\newcommand{\ResumenInforme}{Bimbo despacha a 61 tiendas Bembos lo que el sistema de compras del cliente le indica, sin ninguna validación previa de que esa cantidad tenga sentido. Cuando la tienda se equivoca al registrar el pedido, el error se convierte en producto despachado. Este informe delimita ese problema sobre 10\,374 líneas de pedido vigentes y propone un software que compare cada pedido con el historial de su tienda y explique por qué lo marca. Tras comparar cuatro alternativas, se selecciona la validación con el historial por ser la única que no requiere cambios en el cliente y que permite justificar cada alerta. Se presentan la estructura del trabajo, el cronograma, un presupuesto preliminar de S/~3\,312 con reservas, los riesgos y los indicadores del proyecto. El avance de las semanas 1 a 6 incluye un prototipo que procesa el archivo original y mide reglas sencillas. Como todavía hay un solo error confirmado, los métodos se probaron con dos casos conocidos, el error de la tienda de ATE y la semana de Fiestas Patrias. La comparación del acumulado de la semana, que usa solo la información disponible al alertar, detectó el error tres días antes de la entrega sin falsas alarmas en el feriado; un primer árbol de decisión, conectado a una ventana en Tkinter, aún no reconoce el error si no lo vio al entrenar. La precisión se medirá en las dos últimas semanas, reservadas como prueba, cuando haya más errores confirmados. Estos resultados son preliminares y se validarán con casos confirmados y un periodo de evaluación independiente.}
 \begin{document}
 \input{portada}
 \input{e1_parte1}
-\input{planificacion}
 \input{e1_parte2}
 \input{avance_sem3_6}
-\input{referencias}
+\input{planificacion}
 \appendix
 \input{anexos}
+\input{referencias}
 \end{document}

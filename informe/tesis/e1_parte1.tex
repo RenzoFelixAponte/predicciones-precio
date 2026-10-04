@@ -197,7 +197,7 @@ Exceso acumulado (S/) & 6\,625 \\
 \end{tabular}
 \end{table}
 
-\segun{Alrededor de \textbf{S/~3\,200 al mes} en producto despachado por encima de lo que el comportamiento del cliente permitía anticipar.}{Alrededor de \textbf{S/~3\,200 al mes} de \emph{valor potencial en riesgo}: el valor del producto que se habría despachado por encima de lo esperado si todas estas desviaciones fueran errores. No es una pérdida comprobada; la pérdida efectiva dependerá de cuántas desviaciones se confirmen como error (Sección~\ref{sec:av-terminos}).} La cifra descuenta el movimiento común de la cadena, según el procedimiento de la Sección~\ref{sec:campana}, y excluye las líneas anuladas.
+\segun{Alrededor de \textbf{S/~3\,200 al mes} en producto despachado por encima de lo que el comportamiento del cliente permitía anticipar.}{Alrededor de \textbf{S/~3\,200 al mes} de \emph{valor potencial en riesgo}, es decir, el valor del producto que se habría despachado por encima de lo esperado si todas estas desviaciones fueran errores. No es una pérdida comprobada; la pérdida efectiva dependerá de cuántas desviaciones se confirmen como error (Sección~\ref{sec:av-terminos}).} La cifra descuenta el movimiento común de la cadena, según el procedimiento de la Sección~\ref{sec:campana}, y excluye las líneas anuladas.
 
 \subsubsection{El feriado también levanta los pedidos}
 
@@ -206,7 +206,7 @@ No todas las alzas son errores. La semana del 27 de julio, Fiestas Patrias, lleg
 \subsubsection{Separar la campaña del error sin preguntarle a nadie}
 \label{sec:campana}
 
-Un error de digitación de una tienda no mueve el promedio de las otras 175 series; un feriado sí. Sobre esa diferencia se puede construir un criterio que distinga ambos casos con los datos disponibles, sin depender de que alguien recuerde qué ocurrió una semana determinada.
+\segun{Un error de digitación de una tienda no mueve el promedio de las otras 175 series; un feriado sí.}{En el extracto, las 61 tiendas piden los mismos tres productos de pan de hamburguesa Bimbo (grande, mediano y junior), y cada combinación de tienda y producto forma una serie semanal. Por eso todas las series responden a la misma demanda de fondo. Cuando hay un feriado, suben muchas tiendas a la vez, mientras que un error de digitación afecta a una sola. Un error de una tienda no mueve el promedio de las otras 175 series; un feriado sí.} Sobre esa diferencia se puede construir un criterio que distinga ambos casos con los datos disponibles, sin depender de que alguien recuerde qué ocurrió una semana determinada.
 
 Se define un \emph{factor común semanal} $a_t$ como la mediana del residuo de todas las series esa semana, y se descompone
 \[
@@ -394,7 +394,7 @@ $a_t$ & Mediana del residuo de todas las series esa semana. Separa el feriado de
 
 El extracto no trae un campo que diga «este pedido estuvo mal», así que hay que construirlo en dos pasos. Primero se marcan como candidatos los casos que el área ya reconoce: duplicidad exacta, residuo por encima del umbral acordado, diferencia entre lo pedido y lo consumido. Después se revisan uno por uno y se marcan como error o como normales.
 
-\segun{Hay dos fuentes adicionales de etiquetas. Los correos de alerta guardan casos ya confirmados por escrito. Y de las 398 líneas anuladas, 27 fueron reemplazadas por una cantidad distinta: son pedidos que alguien registró de una forma y luego rectificó, es decir, errores reconocidos por la propia operación sin costo de revisión adicional.}{Un caso solo se considera \emph{error confirmado} cuando lo respalda evidencia operativa: un correo de alerta en que el área o la tienda reconoce el error, una corrección del pedido acompañada de su motivo o la confirmación expresa de la analista. Las líneas anuladas y reemplazadas por otra cantidad no se cuentan como errores de forma automática, porque la modificación puede deberse a un cambio legítimo de necesidad (Sección~\ref{sec:av-marcado}).}
+\segun{Hay dos fuentes adicionales de etiquetas. Los correos de alerta guardan casos ya confirmados por escrito. Y de las 398 líneas anuladas, 27 fueron reemplazadas por una cantidad distinta: son pedidos que alguien registró de una forma y luego rectificó, es decir, errores reconocidos por la propia operación sin costo de revisión adicional.}{Un caso solo se considera \emph{error confirmado} cuando lo respalda evidencia operativa, como un correo de alerta en que el área o la tienda reconoce el error, una corrección del pedido acompañada de su motivo o la confirmación expresa de la analista. Las líneas anuladas y reemplazadas por otra cantidad no se cuentan como errores de forma automática, porque la modificación puede deberse a un cambio legítimo de necesidad (Sección~\ref{sec:av-marcado}).}
 
 \subsection{Contra qué se compara}
 
@@ -424,7 +424,7 @@ Entre esos dos extremos hay cuatro pantallas.
 
 \subsubsection{Cargar el archivo}
 
-El usuario arrastra el Excel y el programa revisa que sirva antes de procesarlo: que estén las columnas necesarias, que las fechas sean fechas y las cantidades números, y que el archivo corresponda al proveedor esperado. Si algo falta, lo dice con nombre propio, «no encuentro la columna Fe.Entrega», en lugar de fallar sin explicación. También avisa cuántas líneas anuladas encontró y cuántas va a analizar, para que el usuario sepa sobre qué está trabajando.
+\segun{El usuario arrastra el Excel}{El usuario selecciona el Excel} y el programa revisa que sirva antes de procesarlo: que estén las columnas necesarias, que las fechas sean fechas y las cantidades números, y que el archivo corresponda al proveedor esperado. Si algo falta, lo dice con nombre propio, «no encuentro la columna Fe.Entrega», en lugar de fallar sin explicación. También avisa cuántas líneas anuladas encontró y cuántas va a analizar, para que el usuario sepa sobre qué está trabajando.
 
 \subsubsection{Revisar las alertas}
 
@@ -468,7 +468,7 @@ Una pantalla de configuración permite ajustar el umbral de alerta y la ventana 
 
 \subsubsection{Cómo está construido}
 
-Se construye en Python con \texttt{pandas} y \texttt{scikit-learn} \cite{pedregosa2011}, y la interfaz se arma con Streamlit, que convierte un script de análisis en una aplicación con carga de archivos, tablas, filtros y gráficos sin escribir código de frontend. Corre en el equipo del usuario. \segun{Internamente encadena cinco pasos: lee y valida el archivo, agrupa por tienda--producto--semana, calcula el valor esperado con la mediana de las $k$ semanas previas, separa el movimiento común de la cadena del propio de cada tienda, y aplica el árbol entrenado devolviendo la marca junto con la regla que la produjo.}{Internamente encadena cinco pasos: lee y valida el archivo; calcula para cada tienda y producto la referencia con las $k$ semanas previas; evalúa cada línea con lo registrado hasta su fecha de registro (acumulado de la semana y tamaño de la línea, Sección~\ref{sec:av-pedido}); separa el movimiento común de la cadena del propio de cada tienda; y aplica el modelo elegido, devolviendo la marca junto con la regla que la produjo.} El modelo entrenado se guarda en disco, así que no reentrena en cada ejecución y responde en segundos. No requiere servidor, base de datos ni conexión con el ERP: trabaja sobre el archivo, igual que hoy trabaja la analista.
+Se construye en Python con \texttt{pandas} y \texttt{scikit-learn} \cite{pedregosa2011}, \segun{y la interfaz se arma con Streamlit, que convierte un script de análisis en una aplicación con carga de archivos, tablas, filtros y gráficos sin escribir código de frontend. Corre en el equipo del usuario.}{y la interfaz es una ventana de escritorio hecha con Tkinter, la librería gráfica incluida en Python. La ventana es la parte visible (\emph{front-end}) y el análisis con el árbol de decisión es la parte interna (\emph{back-end}), como se detalla en la Sección~\ref{sec:arquitectura}. Corre en la computadora de la usuaria.} \segun{Internamente encadena cinco pasos: lee y valida el archivo, agrupa por tienda--producto--semana, calcula el valor esperado con la mediana de las $k$ semanas previas, separa el movimiento común de la cadena del propio de cada tienda, y aplica el árbol entrenado devolviendo la marca junto con la regla que la produjo.}{Internamente encadena cinco pasos. Lee y valida el archivo, calcula para cada tienda y producto la referencia con las $k$ semanas previas, evalúa cada línea con lo registrado hasta su fecha de registro (Sección~\ref{sec:av-pedido}), separa el movimiento común de la cadena del propio de cada tienda y aplica el modelo elegido, que devuelve la marca junto con la regla que la produjo.} El modelo entrenado se guarda en disco, así que no reentrena en cada ejecución y responde en segundos. No requiere servidor, base de datos ni conexión con el ERP: trabaja sobre el archivo, igual que hoy trabaja la analista.
 
 \subsection{Objetivo}
 
@@ -485,7 +485,7 @@ Se construye en Python con \texttt{pandas} y \texttt{scikit-learn} \cite{pedrego
 \textbf{M} & Precisión $\geq 70$\,\% y exhaustividad $\geq 80$\,\% \segun{sobre el conjunto de casos marcados; entre 2 y 5 alertas por semana.}{sobre errores confirmados; entre 2 y 5 alertas por semana; anticipación mediana de al menos 3 días (Tabla~\ref{tab:indicadores}).} \\
 \textbf{A} & Los datos existen (11 semanas, 61 tiendas), las herramientas son de uso libre y el volumen corre en un equipo estándar. \\
 \textbf{R} & \segun{Ataca un costo de alrededor de S/~3\,200 al mes y una tarea manual que hoy no escala.}{Atiende un valor potencial en riesgo de alrededor de S/~3\,200 al mes y una tarea manual que hoy no escala.} \\
-\textbf{T} & \segun{Semana 12 del proyecto, con validación temporal sobre las últimas tres semanas del extracto.}{Semana 12 del proyecto, evaluando una sola vez sobre un extracto posterior al 11 de septiembre que no se usa para construir el método.} \\
+\textbf{T} & \segun{Semana 12 del proyecto, con validación temporal sobre las últimas tres semanas del extracto.}{Semana 12 del proyecto, evaluando una sola vez sobre las dos últimas semanas completas del extracto (24 y 31 de agosto), reservadas como prueba, y confirmando con un extracto posterior al 11 de septiembre.} \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -645,11 +645,11 @@ Cada criterio está redactado de modo que la respuesta sea verdadero o falso, si
 
 \subsection{Viabilidad}
 
-\textbf{Técnica.} El volumen es pequeño y los modelos son ligeros. Python, \texttt{pandas} y \texttt{scikit-learn} bastan en un equipo corriente \cite{pedregosa2011}. El proyecto está dimensionado para el perfil de quien lo ejecuta, una ingeniera industrial con manejo de análisis de datos: no requiere desarrollo web, base de datos ni despliegue en servidores. La interfaz se arma con Streamlit, que convierte un script de análisis en una aplicación con carga de archivos, tablas y gráficos sin escribir código de frontend, y las reglas legibles del árbol se obtienen directamente de \texttt{export\_text} en \texttt{scikit-learn}. La parte propiamente informática del trabajo se reduce así a encadenar herramientas existentes.
+\textbf{Técnica.} El volumen es pequeño y los modelos son ligeros. Python, \texttt{pandas} y \texttt{scikit-learn} bastan en un equipo corriente \cite{pedregosa2011}. El proyecto está dimensionado para el perfil de quien lo ejecuta, una ingeniera industrial con manejo de análisis de datos: no requiere desarrollo web, base de datos ni despliegue en servidores. \segun{La interfaz se arma con Streamlit, que convierte un script de análisis en una aplicación con carga de archivos, tablas y gráficos sin escribir código de frontend, y las reglas}{La interfaz es una ventana sencilla en Tkinter, incluida en Python, y las reglas} legibles del árbol se obtienen directamente de \texttt{export\_text} en \texttt{scikit-learn}. La parte propiamente informática del trabajo se reduce así a encadenar herramientas existentes.
 
 \textbf{Operativa.} El área ya hace esta verificación a mano y aplica el mismo criterio de comparar contra el período anterior, así que el sistema no le pide cambiar de forma de pensar. Dos a cinco alertas semanales caben en la rutina que ya existe y en la ventana de 30 minutos ya pactada.
 
-\segun{\textbf{Económica.} No hay licencias ni infraestructura que comprar. El costo es el tiempo de trabajo de la practicante. El exceso que hoy se despacha, unos S/~3\,200 al mes, supera el costo de las horas de validación necesarias para poner el sistema en marcha.}{\textbf{Económica.} No hay licencias ni infraestructura que comprar. El costo es, principalmente, el tiempo de las personas que participan, estimado en S/~5\,256 con reservas (Sección~\ref{sec:presupuesto}). El valor potencial en riesgo, del orden de S/~3\,200 al mes, es comparable a ese costo, aunque no constituye un ahorro comprobado.}
+\segun{\textbf{Económica.} No hay licencias ni infraestructura que comprar. El costo es el tiempo de trabajo de la practicante. El exceso que hoy se despacha, unos S/~3\,200 al mes, supera el costo de las horas de validación necesarias para poner el sistema en marcha.}{\textbf{Económica.} No hay licencias ni infraestructura que comprar. El costo es, principalmente, el tiempo de las personas que participan, estimado en S/~3\,312 con reservas (Sección~\ref{sec:presupuesto}). El valor potencial en riesgo, del orden de S/~3\,200 al mes, es comparable a ese costo, aunque no constituye un ahorro comprobado.}
 
 \iffinal\else
 \subsection{Matriz de riesgos}
@@ -716,9 +716,9 @@ El hito del paso 5 es el que puede cambiar el rumbo. Si el árbol no le gana a l
 \midrule
 \multicolumn{5}{@{}l}{\textit{Software}} \\
 \small 8 & \small \textbf{Motor de cálculo.} Una función que recibe la ruta del Excel y devuelve la tabla de alertas & \small Programa que ya funciona, aunque sin pantallas & \small 9 & \small\texttt{pandas} \\
-\small 9 & \small \textbf{Pantalla de carga y tabla de alertas.} Arrastrar el archivo, avisar qué falta si algo no está, y mostrar el resultado con filtros por tienda, producto y nivel & \small Aplicación usable de punta a punta & \small 10 & \small Streamlit \\
-\small 10 & \small \textbf{Ficha de detalle y registro de decisiones.} Gráfico de las últimas semanas, las otras dos presentaciones, la regla que disparó la alerta, y botones para confirmar o descartar & \small Ficha por alerta e historial de decisiones & \small 11 & \small Streamlit \\
-\small 11 & \small \textbf{Ausencias, aviso de campaña y descarga} del Excel de salida & \small Archivo de salida completo & \small 11 & \small Streamlit \\
+\small 9 & \small \textbf{Pantalla de carga y tabla de alertas.} Arrastrar el archivo, avisar qué falta si algo no está, y mostrar el resultado con filtros por tienda, producto y nivel & \small Aplicación usable de punta a punta & \small 10 & \segun{\small Streamlit}{\small Tkinter} \\
+\small 10 & \small \textbf{Ficha de detalle y registro de decisiones.} Gráfico de las últimas semanas, las otras dos presentaciones, la regla que disparó la alerta, y botones para confirmar o descartar & \small Ficha por alerta e historial de decisiones & \small 11 & \segun{\small Streamlit}{\small Tkinter} \\
+\small 11 & \small \textbf{Ausencias, aviso de campaña y descarga} del Excel de salida & \small Archivo de salida completo & \small 11 & \segun{\small Streamlit}{\small Tkinter} \\
 \midrule
 \multicolumn{5}{@{}l}{\textit{Cierre}} \\
 \small 12 & \small \textbf{Probarlo sobre una semana real, ajustar y documentar} & \small Manual de uso, informe final y resultados & \small 12 & \small -- \\

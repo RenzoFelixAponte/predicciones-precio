@@ -91,7 +91,7 @@ def gantt():
 
 # ------------------------------------------------------------------ Matriz P-I
 RIESGOS = [  # id, probabilidad 1-5, impacto 1-5
-    ("R1", 5, 4), ("R2", 4, 4), ("R3", 3, 5), ("R4", 3, 4), ("R5", 3, 4), ("R6", 3, 3), ("R7", 2, 4), ("R8", 2, 3)]
+    ("R1", 5, 4), ("R2", 4, 4), ("R3", 3, 4), ("R4", 3, 4), ("R5", 3, 4), ("R6", 3, 3), ("R7", 2, 4), ("R8", 2, 3)]
 
 
 def matriz():
@@ -114,5 +114,47 @@ def matriz():
     fig.tight_layout(); fig.savefig(OUT / "matriz_riesgos.png", dpi=200); plt.close()
 
 
+# ------------------------------------------------------------------ Arquitectura
+def flecha(ax, a, b, texto="", color=AZUL, estilo="-|>"):
+    ax.annotate("", xy=b, xytext=a, arrowprops=dict(arrowstyle=estilo, color=color, lw=1.1))
+    if texto:
+        ax.text((a[0] + b[0]) / 2, (a[1] + b[1]) / 2 + 0.12, texto, ha="center", fontsize=7, color="#444")
+
+
+def arquitectura():
+    fig, ax = plt.subplots(figsize=(10, 4.6))
+    ax.set_xlim(0, 10); ax.set_ylim(0, 6); ax.axis("off")
+    # capas
+    ax.add_patch(FancyBboxPatch((0.2, 4.15), 9.6, 1.6, boxstyle="round,pad=0.02", fc="#f4f7fb", ec=GRIS, lw=0.8))
+    ax.add_patch(FancyBboxPatch((0.2, 0.12), 9.6, 3.68, boxstyle="round,pad=0.02", fc="#fafafa", ec=GRIS, lw=0.8))
+    ax.text(0.35, 5.5, "Front-end: ventana Tkinter (app.py)", weight="bold", fontsize=8.5, color=AZUL)
+    ax.text(0.35, 3.55, "Back-end: análisis y árbol de decisión (pipeline.py, pedido.py, modelo.py)",
+            weight="bold", fontsize=8.5, color=AZUL)
+    for x, txt in [(2.0, "1. Entrenar modelo"), (5.0, "2. Revisar pedidos"), (8.0, "3. Exportar alertas")]:
+        caja(ax, x, 4.75, 2.2, 0.55, txt, AZUL_CLARO, peso="bold")
+    # back-end
+    caja(ax, 1.35, 2.7, 2.0, 0.75, "Limpieza\n(anuladas, duplicados)", "white")
+    caja(ax, 3.9, 2.7, 2.3, 0.75, "Señales de cada línea\n(solo información disponible)", "white")
+    caja(ax, 6.55, 2.7, 2.1, 0.75, "Árbol de decisión\n(entrena o predice)", "white", peso="bold")
+    caja(ax, 8.9, 2.7, 1.5, 0.75, "Regla en\npalabras", "white")
+    flecha(ax, (2.35, 2.7), (2.75, 2.7)); flecha(ax, (5.05, 2.7), (5.5, 2.7)); flecha(ax, (7.6, 2.7), (8.15, 2.7))
+    # datos
+    caja(ax, 1.35, 1.0, 2.1, 0.6, "Excel de pedidos\n(sistema de compras)", "#fff7e0")
+    caja(ax, 4.2, 1.0, 2.3, 0.6, "Excel de revisión\n(etiqueta: error / normal / duda)", "#fff7e0")
+    caja(ax, 6.55, 1.0, 1.9, 0.6, "Modelo guardado\n(arbol.joblib)", "#fff7e0")
+    caja(ax, 8.9, 1.0, 1.5, 0.6, "Excel de\nalertas", "#fff7e0")
+    flecha(ax, (1.35, 1.3), (1.35, 2.32)); flecha(ax, (4.6, 1.3), (6.0, 2.32))
+    flecha(ax, (6.3, 2.32), (6.3, 1.3), "guarda"); flecha(ax, (6.8, 1.3), (6.8, 2.32), "carga")
+    flecha(ax, (8.9, 2.32), (8.9, 1.3))
+    ax.plot([8.9, 8.9, 4.2], [0.7, 0.45, 0.45], color=ROJO, lw=1.1)
+    flecha(ax, (4.2, 0.45), (4.2, 0.7), color=ROJO)
+    ax.text(6.55, 0.3, "la analista confirma o descarta cada alerta y se vuelve a entrenar", ha="center",
+            fontsize=7, color=ROJO)
+    # front -> back
+    for x in (2.0, 5.0, 8.0):
+        flecha(ax, (x, 4.47), (x, 3.82), color=GRIS)
+    fig.tight_layout(); fig.savefig(OUT / "arquitectura.png", dpi=200); plt.close()
+
+
 if __name__ == "__main__":
-    edt(); gantt(); matriz()
+    edt(); gantt(); matriz(); arquitectura()
