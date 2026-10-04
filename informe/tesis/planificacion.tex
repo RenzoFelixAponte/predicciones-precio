@@ -1,0 +1,290 @@
+% ============================================================
+%  Propuesta de solución, cronograma, presupuesto, riesgos e indicadores
+% ============================================================
+
+\section{Propuesta de solución}
+\label{sec:propuesta}
+
+\subsection{Alternativas identificadas}
+
+Para responder al problema delimitado en la Sección~1 se consideraron cuatro alternativas, que atacan la causa raíz desde lugares distintos de la operación:
+
+\begin{enumerate}[label=\textbf{\Alph*.}]
+\item \textbf{Tope fijo en el ERP.} Establecer en el sistema de compras del cliente una cantidad máxima por producto y tienda, por encima de la cual el pedido no se acepta.
+\item \textbf{Doble confirmación de la tienda.} Pedir a cada tienda que confirme su pedido antes del cierre, por ejemplo mediante un mensaje o un formulario.
+\item \textbf{Automatizar la emisión del pedido.} Que un software calcule y envíe el pedido de cada tienda, eliminando la digitación manual. Es la alternativa sugerida por el asesor en la primera revisión.
+\item \textbf{Validación con el historial de cada tienda.} Que el proveedor compare cada pedido recibido con lo que esa tienda suele pedir y alerte, con su motivo, cuando la diferencia no tenga explicación.
+\end{enumerate}
+
+\subsection{Criterios de selección}
+
+Las alternativas se compararon con cinco criterios, ponderados según su importancia para el proveedor. La precisión de las alertas recibe el mayor peso porque es la variable que el proyecto declaró innegociable (Sección~2.1): una alerta que no se cree deja de mirarse. Cada alternativa se calificó de 1 (desfavorable) a 5 (favorable); las letras corresponden a las alternativas de la sección anterior.
+
+\begin{table}[htbp]
+\centering
+\caption{Matriz de selección de alternativas.}
+\label{tab:seleccion}
+\small
+\begin{tabularx}{\textwidth}{@{}Ycccccc@{}}
+\toprule
+\textbf{Criterio} & \textbf{Peso} & \textbf{A} & \textbf{B} & \textbf{C} & \textbf{D} \\
+\midrule
+Distingue tiendas y semanas distintas & 30\,\% & 1 & 3 & 4 & 4 \\
+No requiere permisos ni cambios en el cliente & 25\,\% & 1 & 2 & 1 & 5 \\
+Explica el motivo de cada observación & 20\,\% & 3 & 2 & 2 & 5 \\
+Costo y plazo dentro de 12 semanas & 15\,\% & 3 & 4 & 1 & 4 \\
+Se replica con otros clientes & 10\,\% & 2 & 3 & 1 & 5 \\
+\midrule
+\textbf{Puntaje ponderado} & & \textbf{1,80} & \textbf{2,70} & \textbf{2,10} & \textbf{4,55} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+La alternativa D obtiene el mayor puntaje. La C es la única que elimina el error en su origen, pero exige permisos del cliente, se tendría que rehacer para cada cadena y traslada al proveedor la responsabilidad del pedido (Sección~\ref{sec:retro}). La A es la más sencilla, pero trata igual a una tienda de centro comercial que a una de barrio. La B no requiere tecnología, pero agrega un paso diario a un proceso que ya funciona con plazos ajustados.
+
+\subsection{Solución seleccionada y prototipo previo}
+
+La solución seleccionada es un \textbf{software de validación de pedidos} que recibe el Excel que el área ya exporta del sistema de compras y devuelve otro Excel con las líneas que se deben revisar, indicando cuánto se pidió, cuánto se esperaba y por qué se marcó. El software alerta pero no bloquea: la decisión final sigue siendo de la persona.
+
+La solución cuenta ya con un \textbf{prototipo previo} funcional, construido en las semanas 1 a 6. No tiene todavía pantallas, pero ejecuta el recorrido completo de principio a fin: lee el archivo original, descarta las líneas anuladas, calcula para cada línea las señales que se conocen en el momento de su registro y produce un Excel con las alertas y su motivo (Figura~\ref{fig:av-cap-marcado}). Este prototipo es el que permitió medir las reglas de la Sección~\ref{sec:av-reglas} y la versión por pedido de la Sección~\ref{sec:av-por-pedido}. Lo que falta construir es el modelo de decisión definitivo y la interfaz de uso.
+
+\subsection{Estructura de desglose del trabajo}
+
+La Figura~\ref{fig:edt} descompone el proyecto en cinco entregables y diecinueve paquetes de trabajo. Cada paquete termina en un producto verificable.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{edt.png}
+\caption{Estructura de desglose del trabajo (EDT) del proyecto.}
+\label{fig:edt}
+\end{figure}
+
+\subsection{Paquetes de trabajo}
+
+\begin{table}[htbp]
+\centering
+\caption{Paquetes de trabajo, su producto y su esfuerzo estimado. La responsable de todos es la autora del proyecto.}
+\label{tab:paquetes}
+\small
+\begin{tabularx}{\textwidth}{@{}lL{4cm}Ycc@{}}
+\toprule
+\textbf{Código} & \textbf{Paquete} & \textbf{Producto verificable} & \textbf{Horas} & \textbf{Estado} \\
+\midrule
+1.1--1.3 & Diagnóstico & Archivo limpio, cifras del problema y programa que las reproduce & 40 & Hecho \\
+2.1 & Tabla de señales & Excel con las señales por línea y por semana & 20 & Hecho \\
+2.2 & Casos con evidencia & Lista de casos con su etiqueta y la evidencia que la respalda & 24 & En curso \\
+2.3 & Reglas sencillas & Métricas por periodo de tres reglas y de la versión por pedido & 16 & Hecho \\
+2.4 & Árbol y comparación & Árbol entrenado y comparación con la mejor regla & 20 & Pendiente \\
+2.5 & Umbral y motivos & Umbral elegido y frase explicativa por alerta & 12 & Pendiente \\
+3.1 & Motor de cálculo & Función que transforma el Excel en la tabla de alertas & 16 & Pendiente \\
+3.2--3.4 & Interfaz & Aplicación con carga, alertas, ficha, ausencias y descarga & 40 & Pendiente \\
+4.1--4.3 & Validación & Resultados en el periodo independiente y acta de prueba de uso & 24 & Pendiente \\
+5.1--5.3 & Gestión y cierre & Informes, manual de uso e informe final & 28 & En curso \\
+\midrule
+& \textbf{Total} & & \textbf{240} & \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Entregables y criterios de aceptación}
+
+Cada entregable de primer nivel de la EDT tiene una condición verificable que indica cuándo está terminado y la evidencia que lo demuestra (Tabla~\ref{tab:entregables}). Los criterios detallados del software se encuentran en la Tabla~\ref{tab:aceptacion}.
+
+\begin{table}[htbp]
+\centering
+\caption{Entregables del proyecto y su criterio de aceptación.}
+\label{tab:entregables}
+\small
+\begin{tabularx}{\textwidth}{@{}L{2.6cm}YL{3.2cm}c@{}}
+\toprule
+\textbf{Entregable} & \textbf{Se acepta cuando\ldots} & \textbf{Evidencia} & \textbf{Semana} \\
+\midrule
+1 Diagnóstico & El programa reproduce desde el archivo original las cifras del problema & Salidas \texttt{01\_limpio.xlsx} y Sección~\ref{sec:datos} & 2 \\
+2 Modelo & Existe una decisión documentada entre árbol y regla, tomada con el periodo de validación y con al menos 20 errores confirmados & Registro de casos con evidencia y comparación por periodo & 8 \\
+3 Software & Cumple los 9 criterios de aceptación de la Tabla~\ref{tab:aceptacion} & Archivo de salida y acta de prueba & 11 \\
+4 Validación & Las métricas se calcularon una sola vez sobre el periodo independiente y se reportan frente a sus metas & Informe de resultados & 12 \\
+5 Gestión y cierre & El asesor aprueba el informe final y la jefatura recibe el manual de uso & Acta de entrega & 12 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Resultados esperados}
+
+Al cierre de la semana 12 se espera contar con tres resultados. El primero es un \textbf{software} que, a partir del archivo exportado y en menos de un minuto, entregue las líneas a revisar con su motivo y con varios días de anticipación respecto de la entrega. El segundo es una \textbf{evaluación} del método sobre un periodo que no se usó para construirlo, expresada en la proporción de alertas que resultaron ser errores confirmados y en la proporción de errores que el método detectó. El tercero es un \textbf{registro de casos} revisados con evidencia, que permita seguir mejorando el método con el uso. Si la evaluación muestra que el árbol de decisión no supera a la mejor regla sencilla, el software se entregará igualmente sobre esa regla, y ese hallazgo se reportará como resultado.
+
+\section{Cronograma}
+\label{sec:cronograma}
+
+\subsection{Diagrama de Gantt preliminar}
+
+El proyecto se organiza en doce semanas. La Figura~\ref{fig:gantt} muestra las tareas, su duración y su estado al cierre de la semana 6. El detalle de cada paso se encuentra en la Tabla~\ref{tab:pasos}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{gantt.png}
+\caption{Diagrama de Gantt preliminar. Las barras oscuras están completadas; la línea vertical marca el corte de este avance.}
+\label{fig:gantt}
+\end{figure}
+
+El cronograma incorpora un ajuste respecto del plan original: la decisión sobre el árbol de decisión se traslada de la semana 7 a la 8, porque antes es necesario confirmar los casos con evidencia y recalcular las señales con la información disponible en cada momento. El desplazamiento se absorbe dentro de la semana 8 y no modifica la fecha de entrega. La secuencia que determina esa fecha es la confirmación de casos, el entrenamiento del árbol, la elección del umbral y la construcción del motor de cálculo; su eslabón más frágil es la confirmación de casos, porque depende de los correos que conserva el área de planeamiento.
+
+\subsection{Identificación de hitos}
+
+La Tabla~\ref{tab:hitos} indica, para cada hito, la decisión que se toma y quién la toma.
+
+\begin{table}[htbp]
+\centering
+\caption{Hitos del proyecto.}
+\label{tab:hitos}
+\small
+\begin{tabularx}{\textwidth}{@{}lcYL{2.6cm}l@{}}
+\toprule
+\textbf{Hito} & \textbf{Semana} & \textbf{Decisión que se toma} & \textbf{Quién decide} & \textbf{Estado} \\
+\midrule
+H1 Diagnóstico & 2 & El problema está medido y justifica el proyecto & Asesor & Cumplido \\
+H2 Línea base fijada & 6 & Se fija la cifra que el modelo debe superar & Autora & Cumplido \\
+H3 ¿Árbol o regla? & 8 & Se decide si el árbol aporta frente a la mejor regla & Autora, con visto bueno del asesor & Pendiente \\
+H4 Motor operativo & 9 & El cálculo funciona de punta a punta sin pantallas & Autora & Pendiente \\
+H5 Aplicación completa & 11 & La herramienta está lista para la prueba de uso & Autora & Pendiente \\
+H6 Entrega final & 12 & Se acepta el prototipo según los criterios de la Tabla~\ref{tab:aceptacion} & Asesor y jefatura & Pendiente \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Presupuesto}
+\label{sec:presupuesto}
+
+\subsection{Estimación preliminar de costos}
+
+El proyecto no requiere compras de equipos ni licencias: todas las herramientas son de uso libre y el volumen de datos se procesa en una computadora personal. Su costo es, principalmente, el tiempo de las personas que participan. La Tabla~\ref{tab:presupuesto} lo valoriza para dar una idea del esfuerzo que representa. Ninguna partida implica un desembolso adicional para la empresa, salvo las horas que destinen la analista y la jefatura.
+
+\begin{table}[htbp]
+\centering
+\caption{Estimación preliminar de costos del proyecto (12 semanas).}
+\label{tab:presupuesto}
+\small
+\begin{tabularx}{\textwidth}{@{}YL{2.8cm}rr@{}}
+\toprule
+\textbf{Partida} & \textbf{Cantidad} & \textbf{Costo unitario (S/)} & \textbf{Total (S/)} \\
+\midrule
+\multicolumn{4}{@{}l}{\textit{Personas}} \\
+Practicante (autora) & 240 h & 12 & 2\,880 \\
+Asesor académico & 12 h & 80 & 960 \\
+Analista de planeamiento (revisión de casos y prueba de uso) & 8 h & 25 & 200 \\
+Jefatura de planeamiento (hitos y cierre) & 2 h & 50 & 100 \\
+\midrule
+\multicolumn{4}{@{}l}{\textit{Equipos y servicios}} \\
+Computadora personal (uso prorrateado de 3 meses) & 3 meses & 83 & 250 \\
+Internet y energía & 3 meses & 60 & 180 \\
+Software (Python, \texttt{pandas}, \texttt{scikit-learn}, Streamlit, \LaTeX) & -- & 0 & 0 \\
+\midrule
+\textbf{Línea base de costos} & & & \textbf{4\,570} \\
+Reserva de contingencia (10\,\%) & & & 457 \\
+\midrule
+\textbf{Presupuesto del proyecto} & & & \textbf{5\,027} \\
+Reserva de gestión (5\,\%, fuera de la línea base) & & & 229 \\
+\midrule
+\textbf{Total con reservas} & & & \textbf{5\,256} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+La \textbf{reserva de contingencia} cubre riesgos ya identificados en la Sección~\ref{sec:riesgos-final}, en particular que la confirmación de casos o la obtención del extracto independiente tomen más horas de las previstas; su uso lo autoriza la autora y se registra con su motivo. La \textbf{reserva de gestión} cubre imprevistos que no figuran en el registro de riesgos, como un cambio de alcance solicitado por la empresa; su uso requiere la aprobación del asesor.
+
+Como referencia, el valor potencial en riesgo estimado en la Sección~\ref{sec:datos} es de alrededor de S/~3\,200 al mes. Esta cifra no es una pérdida comprobada (Sección~\ref{sec:av-terminos}), por lo que no se usa para calcular un retorno de la inversión; solo indica que el orden de magnitud del problema es comparable al costo total del proyecto.
+
+\subsection{Supuestos utilizados}
+
+\begin{itemize}
+\item El esfuerzo de la practicante es de 20 horas por semana durante 12 semanas, valorizado en S/~12 por hora, una cifra cercana a la subvención mensual de prácticas.
+\item El asesor dedica una hora por semana, valorizada a una tarifa referencial de docencia de S/~80 por hora.
+\item La analista dedica 6 horas a confirmar casos y 2 a la prueba de uso; la jefatura, 2 horas a hitos y cierre. Ambas se valorizan con tarifas horarias referenciales, no con salarios reales.
+\item La computadora es propia, con un valor de S/~3\,000 y una vida útil de 36 meses; se imputa el uso de 3 meses.
+\item No se contratan servicios en la nube ni licencias: el software corre en el equipo del usuario.
+\item Las tarifas son supuestos de orden de magnitud y deberán validarse con el área si el presupuesto se usa para decidir.
+\end{itemize}
+
+\section{Riesgos}
+\label{sec:riesgos-final}
+
+\subsection{Lista preliminar de riesgos}
+
+La Tabla~\ref{tab:riesgos} actualiza la matriz del primer entregable con lo observado en la ejecución y con la retroalimentación del asesor. Cada riesgo se describe como una condición y su consecuencia, con la señal que permite anticiparlo.
+
+\begin{table}[htbp]
+\centering
+\caption{Lista de riesgos con probabilidad (P) e impacto (I) de 1 a 5, y estrategia de respuesta.}
+\label{tab:riesgos}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}lL{4.2cm}ccL{2.1cm}Y@{}}
+\toprule
+\textbf{ID} & \textbf{Si\ldots{} entonces\ldots} & \textbf{P} & \textbf{I} & \textbf{Estrategia} & \textbf{Respuesta y señal temprana} \\
+\midrule
+R1 & Si no se reúnen 20 errores confirmados, el modelo no tendrá de qué aprender & 5 & 4 & Mitigar & Confirmar los 78 casos con correos en la semana 7. Señal: hoy hay un solo error confirmado \\
+R2 & Si el modelo usa información que no existe al alertar, su desempeño real será menor & 4 & 4 & Evitar & Calcular todas las señales con lo registrado hasta cada momento. Señal: la versión por pedido ya rinde menos que la semanal \\
+R3 & Si no se obtiene un extracto posterior, no habrá evaluación independiente & 3 & 5 & Mitigar & Solicitarlo en la semana 7; si no llega, reservar las dos últimas semanas del extracto actual sin usarlas \\
+R4 & Si el árbol se ajusta demasiado a pocas semanas, fallará con datos nuevos & 3 & 4 & Mitigar & Limitar su profundidad y compararlo solo en validación. Señal: gran diferencia entre ajuste y validación \\
+R5 & Si las campañas generan alertas correctas pero inútiles, el analista dejará de mirarlas & 3 & 4 & Mitigar & Usar el movimiento común de la cadena. Señal: más de 10\,\% de series en alza la misma semana \\
+R6 & Si el historial contiene errores, la referencia quedará inflada & 3 & 3 & Mitigar & Usar medianas y recalcular sin los casos confirmados \\
+R7 & Si el software no se adopta, se volverá a la revisión manual & 2 & 4 & Mitigar & Interfaz de un solo paso y criterio de aceptación 9 \\
+R8 & Si cambia el formato del archivo exportado, el programa fallará & 2 & 3 & Aceptar & Verificar columnas al inicio con un mensaje explícito \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Matriz de probabilidad e impacto}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.55\textwidth]{matriz_riesgos.png}
+\caption{Matriz de probabilidad e impacto. Los riesgos en rojo requieren respuesta inmediata; los ámbar, seguimiento semanal.}
+\label{fig:matriz}
+\end{figure}
+
+\subsection{Estrategias de respuesta}
+
+Los riesgos R1, R2 y R3 son los que más pueden afectar el resultado del proyecto, ya que tienen que ver con cuántos errores se confirman, qué información se usa para alertar y en qué periodo se mide el desempeño. Por eso se atienden en la semana 7, antes de entrenar el árbol. Los riesgos R4 a R6 se mitigan con decisiones de diseño ya incorporadas al método. El R7 se gestiona con la prueba de uso de la semana 12 y el R8 se acepta, porque su impacto es acotado y su detección inmediata.
+
+\section{Indicadores}
+\label{sec:kpis}
+
+La Tabla~\ref{tab:alineacion} muestra cómo cada elemento del plan responde al anterior: el problema da lugar a la causa raíz, esta al objetivo, el objetivo a un entregable y el entregable a un indicador que permite verificarlo.
+
+\begin{table}[htbp]
+\centering
+\caption{Alineación entre problema, objetivos, entregables e indicadores.}
+\label{tab:alineacion}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}YYL{2.4cm}L{2.6cm}@{}}
+\toprule
+\textbf{Causa que se ataca} & \textbf{Objetivo específico} & \textbf{Entregable} & \textbf{Indicador} \\
+\midrule
+No hay un valor de referencia por tienda & 2. Valor esperado con información disponible & 2 Modelo & Error de la referencia \\
+La revisión es visual y no prioriza & 4. Elegir el método que alerta mejor & 2 Modelo & Precisión y exhaustividad \\
+Las alertas llegan tarde o no se revisan & 5. Software con motivo y anticipación & 3 Software & Carga de alertas y anticipación \\
+No se sabe si el control funciona & 3 y 6. Casos confirmados y evaluación independiente & 4 Validación & Errores confirmados \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+La Tabla~\ref{tab:indicadores} define los indicadores con que se medirá el proyecto. Se distinguen los indicadores de \emph{resultado}, que dicen si el problema se está resolviendo, de los indicadores \emph{líderes}, que avisan con anticipación si el resultado está en riesgo.
+
+\begin{table}[htbp]
+\centering
+\caption{Indicadores clave del proyecto.}
+\label{tab:indicadores}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}L{2.6cm}YL{1.6cm}L{1.5cm}L{1.6cm}@{}}
+\toprule
+\textbf{Indicador} & \textbf{Cómo se calcula} & \textbf{Meta} & \textbf{Tipo} & \textbf{Hoy} \\
+\midrule
+Precisión de las alertas & Alertas que resultan ser errores confirmados / alertas emitidas & $\geq 70$\,\% & Resultado & Por medir \\
+Exhaustividad & Errores confirmados detectados / errores confirmados & $\geq 80$\,\% & Resultado & 1 de 1 \\
+Carga de alertas & Alertas emitidas por semana & 2 a 5 & Resultado & 2 a 6 \\
+Anticipación & Días entre la alerta y la fecha de entrega (mediana) & $\geq 3$ días & Resultado & 3 a 5 \\
+Tiempo de proceso & Segundos entre la carga del archivo y el resultado & $< 60$ s & Resultado & 17 s (prototipo) \\
+Errores confirmados & Casos con evidencia operativa acumulados & $\geq 20$ & Líder & 1 \\
+\bottomrule
+\end{tabularx}
+\end{table}

@@ -1,0 +1,14 @@
+% Copia fiel del Entregable 1 (annotated-P1.pdf)
+\documentclass[11pt,a4paper]{article}
+\input{preambulo}
+\newif\iffinal
+\finalfalse
+\newcommand{\EntregableTitulo}{Entregable 1}
+\newcommand{\FechaInforme}{6 de septiembre de 2026}
+\newcommand{\ResumenInforme}{Bimbo despacha a 61 tiendas Bembos lo que el sistema de compras del cliente le indica, sin ninguna validación previa de que esa cantidad tenga sentido. Cuando la tienda se equivoca al registrar el pedido, el error se convierte en producto despachado. Este informe delimita ese problema, lo cuantifica sobre 10\,374 líneas de pedido vigentes y propone automatizar la verificación: estimar cuánto debería pedir cada tienda a partir de su propio historial y comparar esa cifra con lo que pidió de verdad, dejando que un árbol de decisión clasifique la diferencia y explique por qué la marcó. El análisis exploratorio muestra que el método reencuentra por sí solo el caso que el área ya había detectado a mano, genera unas dos alertas por semana y tiene un riesgo identificado: confundir un feriado con un error.}
+\begin{document}
+\input{portada}
+\input{e1_parte1}
+\input{e1_parte2}
+\input{referencias}
+\end{document}

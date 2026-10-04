@@ -1,0 +1,118 @@
+% ============================================================
+%  Anexo: evidencias del prototipo (capturas de Excel y del código)
+% ============================================================
+
+\section{Evidencias del prototipo}
+\label{sec:anexo}
+
+Este anexo documenta el prototipo construido en las semanas 1 a 6. Para cada paso se muestra el archivo de Excel que produce, tal como lo vería la analista de planeamiento, y la función del programa que lo genera. El prototipo se ejecuta con dos órdenes sobre el archivo exportado del sistema de compras, sin modificarlo:
+
+\begin{center}
+\texttt{python src/pipeline.py exportBIMBO.XLSX}\\
+\texttt{python src/pedido.py exportBIMBO.XLSX [extracto\_de\_prueba.xlsx]}
+\end{center}
+
+\begin{table}[H]
+\centering
+\caption{Organización del prototipo.}
+\label{tab:repo}
+\small
+\begin{tabularx}{\textwidth}{@{}L{4.2cm}Y@{}}
+\toprule
+\textbf{Archivo} & \textbf{Función} \\
+\midrule
+\texttt{src/pipeline.py} & Pasos 1 a 4 en su versión semanal: limpieza, señales, casos sospechosos y reglas sencillas \\
+\texttt{src/pedido.py} & Versión por pedido: señales con la información disponible al registrar cada línea, umbrales calibrados en el periodo de ajuste y métricas por periodo \\
+\texttt{src/figuras\_gestion.py} & EDT, diagrama de Gantt y matriz de riesgos \\
+\texttt{src/capturas\_excel.ps1}, \texttt{src/capturas\_codigo.py} & Generan las capturas de este anexo \\
+\texttt{salidas/01} a \texttt{05\_*.xlsx} & Archivos de resultados de cada paso \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Archivo de entrada}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{xl_00_original.png}
+\caption{Archivo \texttt{exportBIMBO.xlsx} tal como se exporta del sistema de compras. Es la única entrada del prototipo.}
+\label{fig:xl-original}
+\end{figure}
+
+\subsection{Paso 1: limpieza}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{code_01_limpiar.png}
+\caption{Función \texttt{limpiar} (\texttt{src/pipeline.py}): verifica las columnas, separa las líneas anuladas, empareja cada anulada con su reemplazo y marca los duplicados.}
+\label{fig:code-limpiar}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{minipage}[t]{0.32\textwidth}\centering
+\includegraphics[width=\textwidth]{xl_01_resumen.png}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.66\textwidth}\centering
+\includegraphics[width=\textwidth]{xl_01_rectificadas.png}
+\end{minipage}
+\caption{\texttt{salidas/01\_limpio.xlsx}. A la izquierda, la hoja \texttt{resumen} con las cifras de limpieza; a la derecha, la hoja \texttt{rectificadas} con las líneas anuladas cuya cantidad cambió.}
+\label{fig:xl-limpio}
+\end{figure}
+
+\subsection{Paso 2: señales}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{code_02_senales.png}
+\caption{Función \texttt{senales} (\texttt{src/pipeline.py}): referencia de la tienda, desviación, variación semanal, peso del producto, movimiento común de la cadena y presentaciones en alza. El resultado se muestra en la Figura~\ref{fig:av-cap-senales}.}
+\label{fig:code-senales}
+\end{figure}
+
+\subsection{Paso 3: casos sospechosos}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{code_03_candidatos.png}
+\caption{Función \texttt{candidatos} (\texttt{src/pipeline.py}): selecciona los casos sospechosos, propone una etiqueta con su regla explícita y deja las columnas para la revisión con evidencia. El resultado se muestra en la Figura~\ref{fig:av-cap-marcado}.}
+\label{fig:code-candidatos}
+\end{figure}
+
+\subsection{Paso 4: reglas sencillas}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{code_04_reglas.png}
+\caption{Función \texttt{reglas} (\texttt{src/pipeline.py}): separa el periodo de ajuste del de validación y calcula, para cada regla, alertas, aciertos, precisión y exhaustividad.}
+\label{fig:code-reglas}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{xl_04_metricas.png}
+\caption{Hoja \texttt{metricas} de \texttt{salidas/04\_reglas.xlsx}, origen de la Tabla~\ref{tab:av-reglas}.}
+\label{fig:xl-reglas}
+\end{figure}
+
+\subsection{Versión por pedido}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{code_05_por_linea.png}
+\caption{Función \texttt{senales\_por\_linea} (\texttt{src/pedido.py}): para cada línea usa solo lo registrado hasta ese día. La referencia sale de semanas anteriores y el acumulado se compara con lo que la tienda suele llevar a esa fecha.}
+\label{fig:code-linea}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{code_06_calibrar.png}
+\caption{Función \texttt{calibrar} (\texttt{src/pedido.py}): fija los umbrales solo con el periodo de ajuste, para unas cuatro alertas por semana.}
+\label{fig:code-calibrar}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{xl_05_metricas_pedido.png}
+\caption{Hoja \texttt{metricas\_por\_periodo} de \texttt{salidas/05\_alertas\_pedido.xlsx}, origen de la Tabla~\ref{tab:av-pedido}. La columna \texttt{confirmados\_detectados} muestra que el caso ATE se detecta en validación.}
+\label{fig:xl-pedido}
+\end{figure}

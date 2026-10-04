@@ -1,0 +1,727 @@
+% ============================================================
+%  Entregable 1 — secciones 1 a 5 (transcripción fiel del PDF)
+% ============================================================
+
+\section{El problema}
+
+\subsection{Cómo funciona hoy la operación}
+
+Bimbo abastece de pan de hamburguesa a las tiendas Bembos, operadas por NGR y EyH. Cada tienda calcula lo que va a necesitar, el área de compras consolida esas necesidades y emite una orden de compra en el ERP. El proveedor produce y despacha contra esa orden, y factura a 60 días.
+
+Todo el proceso descansa en un supuesto que nadie verifica: que la cantidad escrita en la orden es la cantidad correcta. Si una tienda registra 432 unidades donde quería 108, el sistema no lo cuestiona. El único filtro es que alguien del proveedor abra el archivo, note algo raro y escriba un correo preguntando.
+
+\subsection{Lo que dijeron y lo que realmente pasa}
+
+La queja llegó así, con estas palabras: «observo cantidades altas en pedido de las tres presentaciones, como ejemplo de doble pedido de algunas tiendas». \segun{Conviene separar tres cosas que suelen confundirse.}{A continuación se separan el síntoma, el problema y la solución que suele proponerse primero.}
+
+\begin{table}[htbp]
+\centering
+\caption{Separación entre lo que se ve, lo que falla y la solución precipitada.}
+\label{tab:sintoma}
+\small
+\begin{tabularx}{\textwidth}{@{}YYY@{}}
+\toprule
+\textbf{Síntoma} & \textbf{Problema} & \textbf{Solución que aparece primero} \\
+\midrule
+Llegan pedidos con cantidades muy por encima de lo habitual, y a veces la misma línea repetida &
+No existe ningún control que compare la cantidad pedida contra el comportamiento histórico de esa tienda antes de que el pedido se despache &
+Que alguien revise el archivo todos los días o que el ERP tenga un tope \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\segun{La diferencia importa. Revisar el archivo a mano ya se hace y no alcanza; poner un tope fijo trata igual a una tienda de centro comercial y a una de barrio. El problema no es que falte esfuerzo, es que falta un criterio automático que use el historial de cada tienda.}{La revisión manual del archivo ya se realiza y no es suficiente, y un tope fijo trataría igual a una tienda de centro comercial y a una de barrio. Lo que falta es un criterio automático basado en el historial de cada tienda.}
+
+\subsection{Por qué pasa: cinco porqués}
+
+\begin{enumerate}
+\item \textbf{¿Por qué se despachan pedidos con cantidades erróneas?} Porque el proveedor produce contra lo que dice la orden de compra.
+\item \textbf{¿Por qué produce contra una orden que puede estar mal?} Porque no tiene forma de saber que lo está antes de producir.
+\item \textbf{¿Por qué no tiene forma de saberlo?} Porque la única revisión es visual y depende de que un analista reconozca el patrón en un archivo de cientos de líneas.
+\item \textbf{¿Por qué la revisión es visual?} Porque no hay un valor de referencia calculado contra el cual comparar cada línea.
+\item \textbf{¿Por qué no hay valor de referencia?} Porque el historial de pedidos por tienda y producto existe en el sistema pero nunca se ha usado para construir uno. \textbf{Esa es la causa raíz.}
+\end{enumerate}
+
+\segun{Si se elimina esa causa, el efecto desaparece: la comparación deja de depender de que alguien tenga un buen día.}{Si se elimina esta causa, la comparación deja de depender de la revisión visual de una persona.}
+
+\subsection{Ishikawa}
+
+Los cinco porqués siguen una sola cadena. El diagrama de causa--efecto de la Figura~\ref{fig:ishikawa} abre esa cadena en las seis familias de causas que suelen revisarse en una operación, para comprobar que no queda ninguna fuera.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{ishikawa.png}
+\caption{Diagrama de causa--efecto sobre el despacho de pedidos con cantidad errónea \cite{ishikawa}. Las causas de Sistemas y Mediciones son las que este proyecto ataca; las de Entorno explican los falsos positivos que el modelo debe evitar.}
+\label{fig:ishikawa}
+\end{figure}
+
+\subsection{La evidencia}
+
+Tres correos de la operación sostienen lo anterior. El primero (Figura~\ref{fig:correo1}) es el mensaje interno que originó la revisión: advierte cantidades altas en las tres presentaciones, con doble pedido en varias tiendas.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.5\textwidth]{correo_interno.png}
+\caption{Comunicación interna que reporta cantidades altas y doble pedido en las tres presentaciones de pan de hamburguesa.}
+\label{fig:correo1}
+\end{figure}
+
+Los otros dos muestran el control actual funcionando y fallando. En el segundo, el proveedor avisa que la tienda de ATE tiene un pedido «muy alto en comparación a su despacho anterior y el posterior» y recuerda que las alertas se responden en 30 minutos. \segun{Vale la pena detenerse en esa frase: el criterio que usa la analista es exactamente comparar contra el período anterior, que es lo que este proyecto quiere automatizar.}{El criterio que usa la analista es comparar contra el periodo anterior, que es lo que este proyecto busca automatizar.}
+
+En el tercero, nadie contestó dentro de la ventana y el pedido se despachó igual, para no desabastecer la tienda. \segun{El control existe, pero no bloquea nada.}{Es decir, el control existe, pero no detiene el despacho.}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.55\textwidth]{correo_alerta.png}
+\caption{Alerta manual del proveedor sobre el pedido atípico de una tienda, comparado contra el despacho anterior y el posterior.}
+\label{fig:correo2}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.6\textwidth]{correo_sin_respuesta.png}
+\caption{Sin respuesta dentro de la ventana, el pedido sospechoso se atiende de todos modos.}
+\label{fig:correo3}
+\end{figure}
+
+\subsection{El conjunto de datos}
+
+El proyecto trabaja sobre un conjunto de datos real: el archivo \texttt{exportBIMBO.xlsx}, exportado del sistema de compras del cliente. Es la misma exportación que el área de planeamiento genera de forma rutinaria para revisar los pedidos, de modo que no hubo que construir nada para obtenerlo ni habrá que cambiar nada para volver a obtenerlo.
+
+Cada fila del archivo es una \emph{línea de pedido}: un producto solicitado por una tienda para una fecha de entrega, dentro de una orden de compra. Una orden agrupa varias líneas, identificadas por su número de posición. El archivo tiene 10\,772 filas y 28 columnas, y cubre del 1 de julio al 11 de septiembre de 2026.
+
+\begin{table}[htbp]
+\centering
+\caption{Muestra de las primeras filas del archivo.}
+\label{tab:muestra}
+\small
+\begin{tabular}{@{}llrrlrr@{}}
+\toprule
+\textbf{Fe. entrega} & \textbf{Orden} & \textbf{Pos.} & \textbf{Material} & \textbf{Tienda} & \textbf{Cantidad} & \textbf{Valor S/} \\
+\midrule
+11-09-2026 & 4500730889 & 10 & 201985 & BB TDA MONTERRICO & 180 & 125,40 \\
+11-09-2026 & 4500730889 & 20 & 201986 & BB TDA MONTERRICO & 330 & 193,60 \\
+11-09-2026 & 4500730889 & 30 & 201987 & BB TDA MONTERRICO & 480 & 238,40 \\
+11-09-2026 & 4500730889 & 40 & 201985 & BB TDA AURORA & 144 & 100,32 \\
+11-09-2026 & 4500730889 & 50 & 201986 & BB TDA AURORA & 420 & 246,40 \\
+11-09-2026 & 4500730889 & 60 & 201987 & BB TDA AURORA & 420 & 208,60 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Diccionario de columnas}
+
+De las 28 columnas, 12 aportan información al análisis, 12 son constantes o administrativas y 4 vienen completamente vacías. La Tabla~\ref{tab:diccionario} las describe.
+
+\begin{table}[htbp]
+\centering
+\caption{Columnas del archivo, su contenido y su uso en el proyecto.}
+\label{tab:diccionario}
+\small
+\begin{tabularx}{\textwidth}{@{}L{4.2cm}Yc L{2.2cm}@{}}
+\toprule
+\textbf{Columna} & \textbf{Contenido} & \textbf{Valores distintos} & \textbf{Uso} \\
+\midrule
+Fecha documento & Día en que se registró la orden & 30 & Contexto \\
+Fe. Entrega & Día comprometido de entrega & 68 & \textbf{Clave} \\
+Documento compras & Número de orden de compra & 156 & Agrupación \\
+Posición & Número de línea dentro de la orden & 197 & Duplicidad \\
+Material & Código del producto & 3 & \textbf{Clave} \\
+Texto breve & Descripción del producto & 3 & Reporte \\
+Tienda & Nombre de la tienda solicitante & 61 & \textbf{Clave} \\
+Centro & Código de la tienda & 61 & Equivale a Tienda \\
+Cantidad de pedido & Unidades solicitadas & 115 & \textbf{Variable objetivo} \\
+Cantidad en UMA & Igual a la anterior en este extracto & 115 & Verificación \\
+Por entregar (cantidad) & Pendiente de despacho & 61 & Contexto \\
+Valor neto de pedido & Importe de la línea en soles & 196 & Costo del exceso \\
+Precio neto & Precio de referencia del producto & 59 & Contexto \\
+Indicador de borrado & Marca «L» si la línea fue eliminada & 1 & \textbf{Filtro} \\
+Creado por & Usuario que registró la orden & 23 & Contexto \\
+Nombre del proveedor & Razón social del proveedor & 7 & Filtro \\
+N.º Factura, Ref. Sunat, Fecha Pago & Datos de facturación, presentes en 6\,926 filas & -- & No se usan \\
+Unidad medida pedido, Unidad de almacén, Moneda, Grupo de artículos, Cantidad base & Constantes en todo el archivo & 1 & No aportan \\
+Historial pedido, Número de necesidad, Num. EM o AC, Tipo de imputación & Columnas vacías en las 10\,772 filas & 0 & No se usan \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Tres observaciones sobre la calidad del archivo condicionan el análisis. La unidad de medida es única (UN) en todas las filas, de modo que no hay que convertir entre bolsas, bandejas y unidades dentro de este extracto. El campo de facturación está presente solo en 6\,926 filas, porque las órdenes más recientes aún no se facturan, así que no sirve para verificar lo entregado. Y el indicador de borrado obliga a un filtro previo que se explica en la Sección~\ref{sec:anuladas}.
+
+Con los tres campos clave, que son tienda, material y fecha de entrega, más la cantidad, el archivo se reorganiza en 180 series semanales de tienda y producto, que son la materia prima del método. De ellas, 176 tienen suficiente historial previo para poder evaluarse, lo que deja 1\,554 observaciones de tienda, producto y semana sobre las que se mide todo lo que sigue.
+
+\subsection{Qué dicen los datos}
+\label{sec:datos}
+
+Los correos describen el fenómeno; el extracto del sistema de compras permite medirlo. \segun{Conviene precisar el alcance de lo que sigue.}{Las cifras de esta sección tienen el siguiente alcance.} Las cifras y figuras de esta sección provienen de un análisis exploratorio \emph{ya ejecutado} sobre el extracto real, con un cuaderno en Python que se vuelve a correr sobre cualquier archivo del mismo formato. No son estimaciones ni ejemplos ilustrativos. Lo que todavía no existe es el software descrito en la Sección~\ref{sec:software}: el método está probado, la herramienta que lo pone en manos de quien revisa está por construirse. \segun{Los resultados de esta sección son, por tanto, la evidencia de que el enfoque funciona sobre los datos históricos, y no una medición del sistema en operación.}{Por tanto, estos resultados son un primer indicio de que el enfoque puede funcionar con los datos históricos; no son una medición del sistema en operación ni han sido validados en un periodo independiente (Sección~\ref{sec:av-periodos}).}
+
+\subsubsection{Las líneas anuladas y el doble pedido}
+\label{sec:anuladas}
+
+Entre las columnas del archivo hay una llamada \emph{indicador de borrado}. Está vacía casi siempre, pero en 398 líneas dice «L», la marca que usa el sistema cuando una posición se elimina. \segun{Vale la pena mirarlas, porque cambian la cuenta.}{Estas líneas modifican los conteos, por lo que se analizaron por separado.}
+
+De esas 398 líneas anuladas, 385 tienen al menos una línea activa para la misma tienda, el mismo producto y la misma fecha de entrega. No son pedidos adicionales: son pedidos que se borraron y se volvieron a cargar. Al comparar cada anulada con su reemplazo, en la enorme mayoría de los casos la cantidad es idéntica, es decir que se volvió a cargar exactamente lo mismo, y solo en 27 la cantidad cambió, con la versión definitiva mayor en 19 casos y menor en 8.
+
+Esto obliga a trabajar con las 10\,374 líneas vigentes, y corrige una cuenta que sin ese filtro sale mal. Si se dejan las anuladas junto con sus reemplazos, el archivo aparenta tener cientos de pedidos repetidos con la misma cantidad, cuando en realidad se está contando dos veces el mismo pedido. Descontándolas quedan \textbf{54 casos de cantidad idéntica repetida}, que suman 119 líneas, y 176 combinaciones de tienda, producto y fecha con más de una línea. Ese es el volumen real del doble pedido, y para encontrarlo no hace falta ningún modelo: alcanza con una consulta.
+
+\segun{Las 27 líneas donde la corrección cambió la cantidad sirven además como etiquetas: son pedidos que alguien registró de una forma y después rectificó.}{Las líneas donde la corrección cambió la cantidad (23 con el criterio de emparejamiento de la Sección~\ref{sec:av-limpieza}) son pedidos que alguien registró de una forma y después modificó. No se consideran errores por sí mismas, porque una modificación puede responder a una necesidad legítima de la tienda; se tratan como casos sospechosos que requieren evidencia (Sección~\ref{sec:av-marcado}).}
+
+\subsubsection{El método encuentra el caso que ya conocíamos}
+
+Se calculó, para cada tienda y producto, la mediana de las cuatro semanas previas como valor de referencia $\hat q_t$, y la diferencia relativa contra el pedido real, $e_t = (q_t - \hat q_t)/\hat q_t$. La Figura~\ref{fig:ate} muestra qué pasa con la tienda de ATE en pan grande.
+
+Esa semana marcada es el pedido del sábado 22 de agosto, el mismo que motivó el correo de la Figura~\ref{fig:correo2}. El cálculo llegó a la misma conclusión que la analista, sin que nadie le indicara qué buscar. \segun{Es la mejor señal de que el criterio automático coincide con el juicio experto que hoy sostiene la verificación.}{Es un indicio de que el criterio automático puede coincidir con el juicio de la analista, aunque se basa en un solo caso confirmado.}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{ate_referencia.png}
+\caption{Tienda ATE, pan grande: pedido real contra valor de referencia. La semana del 17 de agosto pide 432 unidades donde se esperaban 117.}
+\label{fig:ate}
+\end{figure}
+
+\subsubsection{Cuánto producto se despacha de más}
+
+El impacto no está en la merma de la tienda sino en el propio despacho: se produce, se transporta y se factura una cantidad que el cliente no pidió realmente. Con el precio unitario implícito en cada línea (mediana S/~0,59) se puede poner número a ese exceso.
+
+\begin{table}[htbp]
+\centering
+\caption{Exceso despachado sobre el valor de referencia, umbral $\tau = 0{,}8$.}
+\label{tab:exceso}
+\small
+\begin{tabular}{@{}lr@{}}
+\toprule
+\segun{Casos detectados en 9 semanas evaluables}{Desviaciones detectadas en 9 semanas evaluables} & 17 \\
+Exceso acumulado (unidades) & 11\,200 \\
+Exceso acumulado (S/) & 6\,625 \\
+\segun{\textbf{Exceso mensual estimado (S/)}}{\textbf{Valor potencial en riesgo al mes (S/)}} & \textbf{3\,187} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\segun{Alrededor de \textbf{S/~3\,200 al mes} en producto despachado por encima de lo que el comportamiento del cliente permitía anticipar.}{Alrededor de \textbf{S/~3\,200 al mes} de \emph{valor potencial en riesgo}: el valor del producto que se habría despachado por encima de lo esperado si todas estas desviaciones fueran errores. No es una pérdida comprobada; la pérdida efectiva dependerá de cuántas desviaciones se confirmen como error (Sección~\ref{sec:av-terminos}).} La cifra descuenta el movimiento común de la cadena, según el procedimiento de la Sección~\ref{sec:campana}, y excluye las líneas anuladas.
+
+\subsubsection{El feriado también levanta los pedidos}
+
+No todas las alzas son errores. La semana del 27 de julio, Fiestas Patrias, llega al 12,4\,\% de series con alza superior al 50\,\%, frente a un nivel de fondo cercano al 2\,\%. Una regla de umbral marcaría veinte tiendas esa semana, todas correctas, y el analista dejaría de mirar las alertas en poco tiempo. Distinguir el feriado del error exige una pregunta que ningún umbral sobre una sola variable puede responder: si la tienda subió sola o subió junto con todas las demás. La Sección~\ref{sec:campana} la responde con los datos.
+
+\subsubsection{Separar la campaña del error sin preguntarle a nadie}
+\label{sec:campana}
+
+Un error de digitación de una tienda no mueve el promedio de las otras 175 series; un feriado sí. Sobre esa diferencia se puede construir un criterio que distinga ambos casos con los datos disponibles, sin depender de que alguien recuerde qué ocurrió una semana determinada.
+
+Se define un \emph{factor común semanal} $a_t$ como la mediana del residuo de todas las series esa semana, y se descompone
+\[
+e_t \;=\; \underbrace{a_t}_{\text{lo que le pasó a todo el universo}} \;+\; \underbrace{u_t}_{\text{lo que le pasó solo a esta tienda}}.
+\]
+La decisión de anomalía se toma sobre $u_t$.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{factor_comun.png}
+\caption{Arriba, el factor común semanal. Las dos semanas de julio que lo superan corresponden a movimientos de toda la cadena. Abajo, el porcentaje de series en alza antes y después de descontar ese factor.}
+\label{fig:factor}
+\end{figure}
+
+La semana con mayor movimiento conjunto es la del 27 de julio, Fiestas Patrias, con un factor común de $+0{,}114$. Tres señales permiten separarla del caso de ATE, que es un error confirmado por correo.
+
+\begin{table}[htbp]
+\centering
+\caption{Firma de una semana de campaña frente a la de un error de captura.}
+\label{tab:firma}
+\small
+\begin{tabular}{@{}L{6cm}ll@{}}
+\toprule
+\textbf{Señal} & \textbf{27-jul (Fiestas Patrias)} & \textbf{17-ago (caso ATE)} \\
+\midrule
+Factor común $a_t$ & $+0{,}114$ & $-0{,}117$ \\
+Series en alza, sin corregir & 12,4\,\% & 2,8\,\% \\
+Series en alza, corregido & 7,7\,\% & 3,4\,\% \\
+Tiendas que suben en las 3 presentaciones & 8 de 57 & 0 de 60 \\
+Residuo mediano la semana siguiente & $+0{,}01$ & $+0{,}71$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\segun{Las dos últimas filas son las que más separan un caso del otro.}{Las dos últimas filas son las que más separan un caso del otro, pero la última usa información de la semana siguiente; por eso solo sirve para el análisis retrospectivo y no se usa para emitir alertas (Sección~\ref{sec:av-tiempo}).} En Fiestas Patrias suben las tres presentaciones a la vez en varias tiendas y el efecto se agota la semana siguiente, que vuelve a su nivel normal. En ATE ninguna tienda movió las tres presentaciones y el residuo sigue alto siete días después, que es el comportamiento esperable de un error arrastrado y no de un pico de consumo.
+
+\subsubsection{Los parámetros del método}
+
+El procedimiento no depende de un juicio externo, pero sí \segun{de cinco números que conviene nombrar y ajustar}{de cinco parámetros que deben ajustarse} con validación temporal en lugar de fijarlos a ojo.
+
+\begin{table}[htbp]
+\centering
+\caption{Hiperparámetros del detector.}
+\label{tab:hiper}
+\small
+\begin{tabularx}{\textwidth}{@{}cYcL{4cm}@{}}
+\toprule
+\textbf{Símbolo} & \textbf{Qué controla} & \textbf{Valor inicial} & \textbf{Cómo se ajusta} \\
+\midrule
+$k$ & Semanas de historial para la mediana de referencia & 4 & Error de predicción contra persistencia \\
+$\tau$ & Cuánto tiene que desviarse una tienda por su cuenta ($u_t$) para marcar la línea & 0,8 & Precisión contra carga de alertas \\
+$\kappa$ & Factor común a partir del cual la semana se declara de campaña & 0,10 & Semanas conocidas de feriado \\
+$\sigma$ & Presentaciones que deben subir juntas para atenuar la alerta & 2 de 3 & Casos marcados como error \\
+$\rho$ & Reversión esperada la semana siguiente para confirmar campaña & 0,00 & \segun{Histórico de semanas de feriado}{Solo análisis retrospectivo (usa la semana siguiente)} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Dejar la pregunta resuelta como parámetro y no como consulta tiene una ventaja sobre preguntar: el método vuelve a clasificar correctamente la próxima semana atípica sin que nadie tenga que recordar qué pasó en esta.
+
+\subsubsection{Cuántas alertas serían}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{alertas_umbral.png}
+\caption{Alertas semanales esperadas según el umbral sobre $u_t$. Con $\tau = 0{,}8$ salen unas 2 por semana.}
+\label{fig:alertas-umbral}
+\end{figure}
+
+Dos alertas por semana caben sin problema en la ventana de 30 minutos que ya está pactada. \segun{Un umbral más bajo detectaría más errores, pero a costa de un volumen que nadie va a revisar, y una alerta que no se revisa vale lo mismo que ninguna.}{Un umbral más bajo detectaría más errores, pero generaría más alertas de las que el área puede revisar.}
+
+\subsection{A quién le duele}
+
+\begin{table}[htbp]
+\centering
+\caption{Matriz impacto--interesados.}
+\label{tab:impacto}
+\small
+\begin{tabularx}{\textwidth}{@{}L{2.6cm}YL{2.6cm}L{2.8cm}@{}}
+\toprule
+\textbf{Interesado} & \textbf{Cómo le afecta hoy} & \textbf{Magnitud al mes} & \textbf{Evidencia} \\
+\midrule
+Proveedor (Bimbo) & Produce, transporta y factura una cantidad distinta de la que el cliente realmente necesitaba & \segun{$\approx$ S/~3\,200}{$\approx$ S/~3\,200 en riesgo (potencial)} & Tabla~\ref{tab:exceso} \\
+Planeamiento (Bimbo) & Revisa el archivo línea por línea y redacta los correos de confirmación & 17 casos por revisar cada 9 semanas & Figura~\ref{fig:correo2} \\
+Compras (NGR) & Recibe la alerta, verifica con la tienda y rectifica la orden & \segun{27 líneas rectificadas en el extracto}{23 líneas modificadas en el extracto} & Indicador de borrado \\
+Tiendas & Reciben una cantidad que no corresponde a su pedido & 54 casos de cantidad repetida & Sección~\ref{sec:anuladas} \\
+Producción (Bimbo) & Planifica sobre una señal de demanda distorsionada & Indirecta & Efecto conocido en cadenas de suministro \cite{lee1997} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Los stakeholders y quién decide}
+
+\begin{table}[htbp]
+\centering
+\caption{Ubicación de los interesados según poder e interés.}
+\label{tab:stakeholders}
+\small
+\begin{tabularx}{\textwidth}{@{}L{3.2cm}L{3.2cm}YL{2cm}@{}}
+\toprule
+\textbf{Interesado} & \textbf{Cuadrante} & \textbf{Qué necesita} & \textbf{Frecuencia} \\
+\midrule
+Jefatura de planeamiento (Bimbo) & Alto poder, alto interés & Que las alertas bajen su carga manual y sean defendibles ante el cliente & Semanal \\
+Analista de planeamiento & Bajo poder formal, alto interés & Que el reporte llegue antes del cierre del pedido y no le sume trabajo & Semanal \\
+Compras (NGR) & Alto poder, interés medio & Que la alerta no frene un pedido legítimo & Quincenal \\
+Tiendas & Bajo poder, alto interés & No quedar desabastecidas por una alerta mal disparada & Por excepción \\
+TI del cliente & Alto poder, bajo interés & Que nada de esto exija tocar el ERP en esta etapa & Por hito \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Responsable del resultado:} Sefora Cieza Lujan, autora del proyecto. Lo ejecuta de principio a fin: la preparación de los datos, el marcado de los casos, el modelo y el software. La jefatura recibe el resultado al cierre y el asesor aprueba el entregable académico, pero ninguna etapa intermedia depende de que un tercero responda.
+
+\begin{table}[htbp]
+\centering
+\caption{Responsabilidades sobre los entregables (RACI).}
+\label{tab:raci}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Actividad} & \textbf{Practicante} & \textbf{Asesor} & \textbf{Jefatura} & \textbf{Cliente} \\
+\midrule
+Preparación y limpieza de datos & R/A & I & I & I \\
+Marcado de los casos que fueron error & R/A & C & I & I \\
+Construcción y validación del modelo & R/A & C & I & I \\
+Calibración del umbral de alerta & R/A & C & I & I \\
+Construcción del software & R/A & I & I & I \\
+Presentación de resultados a la empresa & R & I & A & I \\
+Aprobación del entregable académico & R & A & I & I \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{La solución}
+
+\subsection{La propuesta}
+
+La solución es un software de validación de pedidos. Quien revisa los pedidos carga el Excel que ya exporta del sistema de compras y el programa devuelve otro con los productos cuyo pedido no coincide con lo que el historial del cliente permitía esperar. \segun{Un archivo entra, un archivo sale, y en lugar de revisar miles de líneas una por una el analista revisa las pocas que quedan marcadas.}{En lugar de revisar miles de líneas una por una, el analista revisa solo las que quedan marcadas.} El programa no reemplaza la decisión: para cada producto marcado indica cuánto pidió la tienda, cuánto se esperaba según sus semanas anteriores y por qué se marcó, de modo que esa misma fila sirva para reclamarle al cliente. La confirmación final sigue siendo humana.
+
+\segun{Hay dos caminos más obvios que este y ninguno funciona acá.}{Se consideraron otras dos opciones más directas, que se descartaron.} Un tope fijo de cantidad en el ERP trataría igual a una tienda de centro comercial que a una de barrio, y exigiría modificar un sistema que no controlamos. Pedir a las tiendas que confirmen cada pedido por segunda vez agrega un paso diario a un flujo que ya va apurado y no aprende nada: dentro de un año el problema sigue igual. Calcular el valor esperado desde el propio historial evita ambos inconvenientes, porque cada tienda se compara consigo misma y el criterio mejora conforme se acumulan semanas. Es además lo que el área ya hace a mano cuando compara un pedido contra el despacho anterior, así que automatizarlo no le pide a nadie cambiar de forma de pensar.
+
+Dentro de ese enfoque, el árbol de decisión \cite{breiman1984,quinlan1993} se eligió por una razón práctica antes que estadística. Para reclamarle a un cliente hace falta poder decirle por qué: según sus últimas cuatro semanas esperábamos 117 unidades, usted pidió 432, y además hay una línea duplicada. \segun{Un modelo que solo entrega un puntaje traslada el problema de confianza en lugar de resolverlo.}{Un modelo que solo entrega un puntaje no permite dar esa explicación.}
+
+La variable que no se mueve es la \textbf{precisión de las alertas}. Un sistema que marca de más se deja de mirar, que es el fracaso ya documentado en la Figura~\ref{fig:correo3}. Lo primero que cede es la \textbf{cobertura}: se prefiere dejar pasar algunos errores pequeños antes que inundar de avisos al analista. También cede el \textbf{alcance de la integración}, porque el software trabaja sobre el archivo exportado y no toca el ERP del cliente.
+
+\subsection{Por qué el proyecto se limita a estos datos}
+\label{sec:limite}
+
+El trabajo se restringe al pan de hamburguesa que Bimbo despacha a las tiendas Bembos operadas por NGR y EyH: tres productos, 61 tiendas y 11 semanas de historial. No se abordan otros proveedores, categorías ni cadenas.
+
+\segun{La restricción es deliberada y mejora el resultado.}{Esta restricción se tomó por las siguientes razones.} Las tres presentaciones comparten unidad de medida, ciclo de reposición y comportamiento estacional, de modo que el valor esperado de una tienda es comparable con el de otra y el factor común semanal tiene sentido. Al ampliar a categorías con rotación distinta ese supuesto se rompe y habría que estimar un modelo por familia con menos datos cada uno. Trabajar sobre un universo cerrado permite además verificar contra hechos conocidos: el caso de la tienda de ATE está documentado por correo y sirve de comprobación de que el método detecta lo que debe, contraste que no existiría en un conjunto disperso de proveedores. La generalización a otras categorías queda como continuación natural, una vez validado el método en este universo.
+
+\subsection{Cómo funciona}
+
+El sistema corre sobre el archivo de pedidos antes del despacho y tiene dos partes. La primera calcula, con el historial hasta la semana anterior, cuánto debería pedir cada tienda de cada producto. La segunda compara ese número con el pedido real y decide si la diferencia es normal, usando un árbol de decisión \cite{breiman1984,quinlan1993} sobre el residuo $e_t = (q_t - \hat q_t)/\max(\hat q_t, 1)$ y las variables de la Tabla~\ref{tab:variables}.
+
+Para el valor esperado $\hat q_t$ se probarán tres opciones, de la más simple a la más elaborada: el pedido de la semana anterior, $\hat q_t = q_{t-1}$, que es lo que hace hoy la analista y por eso es la referencia obligada; la mediana de las cuatro semanas previas, que aguanta que el propio historial tenga pedidos equivocados, cosa que el promedio no hace; y suavizamiento exponencial con ajuste por día de la semana \cite{hyndman2021}, si el histórico da para tanto. Hay un detalle que puede arruinar el cálculo si se pasa por alto: el historial contiene los errores que se quieren detectar, así que la referencia sale inflada. Por eso se usan estimadores robustos y se recalcula excluyendo lo que la primera pasada marcó.
+
+\subsection{Con qué variables decide el árbol}
+
+\begin{table}[htbp]
+\centering
+\caption{Variables del clasificador.}
+\label{tab:variables}
+\small
+\begin{tabularx}{\textwidth}{@{}lY@{}}
+\toprule
+\textbf{Variable} & \textbf{Qué mide} \\
+\midrule
+$e_t$ & Diferencia relativa entre lo pedido y lo esperado. \\
+$z_{rob}$ & Cuántas desviaciones robustas se aleja el pedido de la mediana de su serie. \\
+$\Delta_{prev}$ & Variación contra el pedido de la semana anterior. \\
+$d_{dup}$ & Si existe otra línea con la misma tienda, producto y cantidad en la misma fecha. \\
+$\rho_{mix}$ & Peso del producto dentro del pedido total de la tienda, comparado con su peso histórico. \\
+$c_{sku}$ & Si las tres presentaciones se movieron juntas. Cuando suben todas a la vez suele ser demanda real. \\
+$a_t$ & Mediana del residuo de todas las series esa semana. Separa el feriado del error de una tienda sola. \\
+\textit{dow} & Día de la semana de entrega. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\segun{Las variables $c_{sku}$ y $a_t$ salen del hallazgo de la Sección~\ref{sec:campana} y son las que un umbral simple no puede usar.}{Las variables $c_{sku}$ y $a_t$ salen del hallazgo de la Sección~\ref{sec:campana} y son las que un umbral simple no puede usar. Todas se calculan solo con la información registrada hasta el momento de evaluar cada línea; ninguna usa datos de semanas posteriores (Tabla~\ref{tab:av-disponibilidad}).}
+
+\subsection{De dónde sale la etiqueta}
+
+El extracto no trae un campo que diga «este pedido estuvo mal», así que hay que construirlo en dos pasos. Primero se marcan como candidatos los casos que el área ya reconoce: duplicidad exacta, residuo por encima del umbral acordado, diferencia entre lo pedido y lo consumido. Después se revisan uno por uno y se marcan como error o como normales.
+
+\segun{Hay dos fuentes adicionales de etiquetas. Los correos de alerta guardan casos ya confirmados por escrito. Y de las 398 líneas anuladas, 27 fueron reemplazadas por una cantidad distinta: son pedidos que alguien registró de una forma y luego rectificó, es decir, errores reconocidos por la propia operación sin costo de revisión adicional.}{Un caso solo se considera \emph{error confirmado} cuando lo respalda evidencia operativa: un correo de alerta en que el área o la tienda reconoce el error, una corrección del pedido acompañada de su motivo o la confirmación expresa de la analista. Las líneas anuladas y reemplazadas por otra cantidad no se cuentan como errores de forma automática, porque la modificación puede deberse a un cambio legítimo de necesidad (Sección~\ref{sec:av-marcado}).}
+
+\subsection{Contra qué se compara}
+
+El árbol se mide contra tres referencias. Un umbral sobre el pedido anterior, que reproduce el control manual actual y es el piso obligado; un umbral sobre $z_{rob}$, como regla estadística simple; y un Isolation Forest \cite{liu2008}, que no necesita etiquetas y sirve para verificar si el criterio de etiquetado tiene sentido. El árbol se implementa en \texttt{scikit-learn} con profundidad limitada \cite{pedregosa2011}, y se usa gradient boosting \cite{chen2016} solo como techo de referencia, para saber cuánta exactitud cuesta la interpretabilidad; si se usa, se acompaña de valores de Shapley \cite{lundberg2017}.
+
+Si el árbol no le gana a los umbrales, hay que decirlo: que el problema se resuelva con una regla simple es un resultado válido, no un fracaso. El marco general de la tarea y sus métricas sigue a Chandola et al.\ \cite{chandola2009}, Hodge y Austin \cite{hodge2004} y Aggarwal \cite{aggarwal2017}; el proceso de trabajo sigue las fases de CRISP-DM \cite{wirth2000} dentro del marco del PMBOK \cite{pmbok2025} y la adaptación de la forma de trabajo de Ambler y Lines \cite{ambler2023}.
+
+\subsection{El pedido que no llegó}
+\label{sec:ausencias}
+
+Un pedido con cantidad equivocada se ve en el archivo; uno que nunca se emitió, no. Para el proveedor la segunda situación puede costar más: la tienda se queda sin producto, la venta no ocurre y nadie se entera hasta que alguien reclama.
+
+El mismo cálculo que estima cuánto debería pedir una tienda detecta esos casos. Si una serie tienda--producto tiene valor esperado positivo para la semana en curso y en el archivo no aparece ninguna línea, la ausencia se reporta igual que una desviación de cantidad.
+
+Las 180 series de tienda y producto por 11 semanas dan 1\,980 combinaciones posibles, de las cuales 1\,913 tienen pedido. Faltan 67, y \textbf{21 son huecos intermedios}: semanas sin pedido entre semanas con pedido, repartidos en 7 series de tres tiendas. No están dispersos en el tiempo, sino concentrados entre el 20 de julio y el 10 de agosto, y las tres tiendas dejan de pedir y vuelven en fechas próximas.
+
+Ese patrón importa para el diseño. Una ausencia no es por sí sola un error: puede ser una pausa con motivo, y varias tiendas que se detienen a la vez en la misma ventana apuntan a una causa compartida antes que a olvidos independientes. Distinguir una cosa de la otra exige el mismo contexto histórico que el resto del método y no un criterio aparte.
+
+El software reporta las ausencias en una hoja separada del archivo de salida, con la tienda, el producto, la cantidad esperada y cuántas semanas lleva sin pedir, y deja la interpretación a quien conoce la operación.
+
+\subsection{El software}
+\label{sec:software}
+
+El entregable final es un software de validación de pedidos que funciona de la forma más simple posible: \textbf{entra un Excel y sale un Excel}. Quien revisa los pedidos carga el mismo archivo que hoy exporta del sistema de compras, sin transformaciones previas, y el programa devuelve otro con los productos cuyo pedido no coincide con lo que su historial permitía esperar. Lo que hoy significa recorrer miles de líneas a la vista pasa a ser revisar las pocas que quedan marcadas.
+
+Entre esos dos extremos hay cuatro pantallas.
+
+\subsubsection{Cargar el archivo}
+
+El usuario arrastra el Excel y el programa revisa que sirva antes de procesarlo: que estén las columnas necesarias, que las fechas sean fechas y las cantidades números, y que el archivo corresponda al proveedor esperado. Si algo falta, lo dice con nombre propio, «no encuentro la columna Fe.Entrega», en lugar de fallar sin explicación. También avisa cuántas líneas anuladas encontró y cuántas va a analizar, para que el usuario sepa sobre qué está trabajando.
+
+\subsubsection{Revisar las alertas}
+
+La pantalla principal es una tabla con una fila por producto marcado, ordenada por valor en riesgo, con las columnas de la Tabla~\ref{tab:columnas-salida} y filtros por tienda, producto y nivel de alerta.
+
+\begin{table}[htbp]
+\centering
+\caption{Columnas del resultado.}
+\label{tab:columnas-salida}
+\small
+\begin{tabularx}{\textwidth}{@{}L{4cm}Y@{}}
+\toprule
+\textbf{Columna} & \textbf{Contenido} \\
+\midrule
+Tienda & Nombre y código de la tienda. \\
+Material y descripción & Código y texto breve del producto. \\
+Fecha de entrega & Fecha comprometida de la línea. \\
+Cantidad pedida / esperada & Lo solicitado y lo que el historial anticipaba. \\
+Desviación & Diferencia porcentual entre ambas. \\
+Motivo & Cantidad fuera de rango, duplicidad, o ambas. \\
+Nivel & Alta, media o baja, según cuánto supere el umbral. \\
+Valor en riesgo & Exceso en unidades por el precio unitario. \\
+Últimas semanas & Pedidos previos de esa tienda y producto. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Al hacer clic en una fila se abre una \emph{ficha de detalle} con lo que el analista necesita para decidir sin salir del programa: el gráfico de las últimas semanas de esa tienda y producto con el pedido actual resaltado, las otras dos presentaciones de la misma tienda esa semana, porque si subieron las tres es más probable que sea demanda real, y la regla exacta que disparó la alerta escrita en palabras.
+
+Desde la misma ficha el analista marca la alerta como \emph{confirmada} o \emph{descartada}, y en el segundo caso escribe por qué. Ese registro de decisiones tiene un efecto que va más allá del orden: cada semana de uso genera ejemplos etiquetados sin trabajo adicional, de modo que el modelo puede reentrenarse con casos reales en lugar de depender de una única muestra revisada al inicio. \segun{La herramienta produce, usándose, el insumo que necesita para mejorar.}{Así, el uso de la herramienta genera los datos necesarios para mejorarla.}
+
+\subsubsection{Ver lo que no llegó}
+
+Una segunda pestaña muestra las ausencias de pedido descritas en la Sección~\ref{sec:ausencias}: tiendas y productos que debían pedir esa semana y no aparecen en el archivo, con la cantidad esperada y cuántas semanas llevan sin pedir. En la cabecera aparece además el aviso de campaña cuando el movimiento común de la semana supera el umbral $\kappa$, para que nadie interprete como error un alza que afectó a toda la cadena.
+
+\subsubsection{Exportar}
+
+El botón de descarga genera el Excel de salida con las alertas, las ausencias y las decisiones tomadas. Es el archivo que se adjunta al correo del cliente, y reemplaza el que hoy se arma a mano.
+
+Una pantalla de configuración permite ajustar el umbral de alerta y la ventana de historial sin tocar el código, porque esos valores se calibran con el uso y no deberían requerir a un programador cada vez.
+
+\subsubsection{Cómo está construido}
+
+Se construye en Python con \texttt{pandas} y \texttt{scikit-learn} \cite{pedregosa2011}, y la interfaz se arma con Streamlit, que convierte un script de análisis en una aplicación con carga de archivos, tablas, filtros y gráficos sin escribir código de frontend. Corre en el equipo del usuario. \segun{Internamente encadena cinco pasos: lee y valida el archivo, agrupa por tienda--producto--semana, calcula el valor esperado con la mediana de las $k$ semanas previas, separa el movimiento común de la cadena del propio de cada tienda, y aplica el árbol entrenado devolviendo la marca junto con la regla que la produjo.}{Internamente encadena cinco pasos: lee y valida el archivo; calcula para cada tienda y producto la referencia con las $k$ semanas previas; evalúa cada línea con lo registrado hasta su fecha de registro (acumulado de la semana y tamaño de la línea, Sección~\ref{sec:av-pedido}); separa el movimiento común de la cadena del propio de cada tienda; y aplica el modelo elegido, devolviendo la marca junto con la regla que la produjo.} El modelo entrenado se guarda en disco, así que no reentrena en cada ejecución y responde en segundos. No requiere servidor, base de datos ni conexión con el ERP: trabaja sobre el archivo, igual que hoy trabaja la analista.
+
+\subsection{Objetivo}
+
+\textbf{General.} Construir y validar un sistema que estime el pedido esperado por tienda y producto a partir del historial, y que clasifique con un árbol de decisión las desviaciones frente al pedido real, \segun{alcanzando una precisión de al menos 70\,\% sobre los casos marcados como error, con no más de cinco alertas semanales, dentro de las 12 semanas del proyecto.}{usando solo la información disponible antes del despacho, y que alcance, en un periodo de prueba independiente, una precisión de al menos 70\,\% y una exhaustividad de al menos 80\,\% sobre errores confirmados con evidencia operativa, con entre 2 y 5 alertas por semana y al menos 3 días de anticipación respecto de la entrega, dentro de las 12 semanas del proyecto.}
+
+\begin{table}[htbp]
+\centering
+\caption{El objetivo, letra por letra.}
+\label{tab:smart}
+\small
+\begin{tabularx}{\textwidth}{@{}cY@{}}
+\toprule
+\textbf{S} & Detectar pedidos anómalos por tienda y producto antes del despacho, con la regla que justifica cada alerta. \\
+\textbf{M} & Precisión $\geq 70$\,\% y exhaustividad $\geq 80$\,\% \segun{sobre el conjunto de casos marcados; entre 2 y 5 alertas por semana.}{sobre errores confirmados; entre 2 y 5 alertas por semana; anticipación mediana de al menos 3 días (Tabla~\ref{tab:indicadores}).} \\
+\textbf{A} & Los datos existen (11 semanas, 61 tiendas), las herramientas son de uso libre y el volumen corre en un equipo estándar. \\
+\textbf{R} & \segun{Ataca un costo de alrededor de S/~3\,200 al mes y una tarea manual que hoy no escala.}{Atiende un valor potencial en riesgo de alrededor de S/~3\,200 al mes y una tarea manual que hoy no escala.} \\
+\textbf{T} & \segun{Semana 12 del proyecto, con validación temporal sobre las últimas tres semanas del extracto.}{Semana 12 del proyecto, evaluando una sola vez sobre un extracto posterior al 11 de septiembre que no se usa para construir el método.} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\iffinal
+\subsection{Objetivos específicos}
+
+Cada objetivo específico tiene un indicador y una fecha que permiten verificar su cumplimiento.
+
+\begin{table}[htbp]
+\centering
+\caption{Objetivos específicos con su indicador de cumplimiento.}
+\label{tab:obj-especificos}
+\small
+\begin{tabularx}{\textwidth}{@{}cYL{4.6cm}c@{}}
+\toprule
+\# & \textbf{Objetivo específico} & \textbf{Indicador y meta} & \textbf{Semana} \\
+\midrule
+1 & Limpiar y consolidar el extracto en una tabla tienda--producto--semana & El programa reproduce las cifras de la Sección~\ref{sec:datos} y excluye el 100\,\% de las líneas anuladas & 2 \\
+2 & Calcular el valor esperado de cada línea con la información disponible al registrarla & Error medio de la referencia menor que el de usar la semana anterior & 7 \\
+3 & Reunir casos de error confirmados con evidencia operativa & Al menos 20 errores confirmados, cada uno con su fuente & 7 \\
+4 & Entrenar el árbol y las reglas sencillas y elegir el método con el periodo de validación & Decisión documentada en el hito H3 & 8 \\
+5 & Construir el software que recibe el Excel y devuelve las líneas a revisar con su motivo & Resultado en menos de 60 segundos y cumplimiento de los 9 criterios de la Tabla~\ref{tab:aceptacion} & 11 \\
+6 & Evaluar el método una sola vez en el periodo independiente & Precisión, exhaustividad, alertas por semana y anticipación reportadas frente a sus metas & 12 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\else
+\subsection{Objetivos específicos}
+
+\begin{enumerate}
+\item Limpiar y consolidar el extracto en una tabla tienda--producto--semana.
+\item Implementar el cálculo del valor esperado y compararlo contra la persistencia.
+\item Marcar los casos que fueron error a partir del historial disponible.
+\item Entrenar el árbol y las líneas base, y evaluarlos con validación temporal.
+\item Construir el software que recibe el Excel de pedidos y devuelve los productos anómalos con su descripción, la desviación y el motivo.
+\end{enumerate}
+\fi
+
+\section{Alcance y verificación}
+
+\subsection{Qué entra y qué no}
+
+\begin{table}[htbp]
+\centering
+\caption{Frontera del proyecto.}
+\label{tab:frontera}
+\small
+\begin{tabularx}{\textwidth}{@{}YY@{}}
+\toprule
+\textbf{Dentro} & \textbf{Fuera} \\
+\midrule
+Limpieza y consolidación del extracto & Pronóstico de demanda para planificar producción \\
+Cálculo del pedido esperado por tienda y producto & Integración dentro del ERP del cliente \\
+Variables de desviación y contexto & Optimización de rutas, inventario o producción \\
+Marcado de los casos que fueron error & Corrección automática del pedido \\
+Árbol de decisión y líneas base, con validación temporal & Otros proveedores, otras categorías y otras cadenas (Sección~\ref{sec:limite}) \\
+Software que recibe el Excel y devuelve los productos anómalos & Despliegue en producción y soporte posterior \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+La corrección automática del pedido queda fuera de manera deliberada: decidir por la tienda cuánto debe pedir excede la responsabilidad que el proyecto puede asumir en esta etapa.
+
+\subsection{Restricciones, supuestos e incertidumbres}
+
+\begin{table}[htbp]
+\centering
+\caption{Lo que se planifica, lo que se valida y lo que se investiga.}
+\label{tab:rsi}
+\small
+\begin{tabularx}{\textwidth}{@{}YYY@{}}
+\toprule
+\textbf{Restricción} & \textbf{Supuesto} & \textbf{Incertidumbre} \\
+\midrule
+El extracto cubre 11 semanas y no se puede alargar hacia atrás & Que las cantidades son comparables entre líneas del mismo producto & Cuánta de la desviación de una semana de campaña es demanda y cuánta error \\
+No se puede modificar el ERP del cliente & Que el historial de correos alcanza para marcar suficientes casos & \segun{Cuántos de los 27 pedidos rectificados}{Cuántos de los 23 pedidos modificados} son errores y cuántos cambios de necesidad \\
+El proyecto cierra en la semana 12 & Que el extracto refleja operación normal y no un período atípico & Con qué frecuencia aparecen errores por debajo del umbral, que hoy no se detectan \\
+Los datos deben anonimizarse para uso académico & Que las alertas se responden dentro de los 30 minutos pactados & Si el patrón se sostiene al ampliar el historial más allá de 11 semanas \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\segun{El caso más peligroso no es que el sistema deje pasar un error, sino el contrario: que marque un pedido correcto, alguien le crea y recorte una cantidad que la tienda sí necesitaba.}{El riesgo de mayor impacto es que el sistema marque como error un pedido correcto y, por esa alerta, se recorte una cantidad que la tienda sí necesitaba.} Ahí el proyecto deja de ahorrar y empieza a costar, porque un quiebre de stock vale más que el exceso que se buscaba evitar: la venta no ocurre y el reclamo pasa a ser del cliente hacia el proveedor. Los correos revisados muestran que la operación ya conoce ese riesgo y decide en su favor: ante la duda se despacha igual, para no desabastecer.
+
+De ahí salen dos decisiones de diseño que aparecen en todo el documento. El sistema alerta pero no bloquea, de modo que ninguna alerta puede reducir un pedido por sí sola. Y la precisión se prioriza sobre la cobertura, aceptando que se escapen errores pequeños antes que marcar pedidos legítimos.
+
+\subsection{Qué se va a medir}
+
+\begin{table}[htbp]
+\centering
+\caption{Evidencia mínima del proyecto.}
+\label{tab:evidencia}
+\small
+\begin{tabularx}{\textwidth}{@{}L{3.6cm}YYl@{}}
+\toprule
+\textbf{Qué mido} & \textbf{Hoy} & \textbf{Con la solución} & \textbf{Cuándo} \\
+\midrule
+Pedidos erróneos detectados antes del despacho & Solo los que alguien nota al revisar el archivo & $\geq 80$\,\% de los confirmados & \segun{Semana 7}{Semana 12} \\
+Precisión de las alertas & Sin medir & $\geq 70$\,\% & \segun{Semana 7}{Semana 12} \\
+Alertas emitidas por semana & 1 documentada en el extracto & entre 2 y 5 & Semana 8 \\
+Unidades despachadas de más y detectadas & 0 & $\geq 80$\,\% de las 11\,200 \segun{identificadas en el extracto}{unidades de desviación identificadas en el extracto} & Semana 12 \\
+Tiempo entre la carga del archivo y el resultado & Revisión manual de todo el archivo & Menos de un minuto & Semana 10 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\iffinal\else
+\subsection{Indicadores}
+
+\begin{table}[htbp]
+\centering
+\caption{Indicadores de seguimiento.}
+\label{tab:indicadores}
+\small
+\begin{tabularx}{\textwidth}{@{}L{2.6cm}YL{1.6cm}L{1.6cm}L{2.2cm}@{}}
+\toprule
+\textbf{Indicador} & \textbf{Cómo se calcula} & \textbf{Meta} & \textbf{Frecuencia} & \textbf{Fuente} \\
+\midrule
+Precisión & Alertas confirmadas como error / alertas emitidas & $\geq 70$\,\% & Semanal & Registro de casos marcados \\
+Exhaustividad & Errores detectados / errores confirmados & $\geq 80$\,\% & Semanal & Registro de casos marcados \\
+Carga de alertas & Alertas emitidas por semana & 2 a 5 & Semanal & Salida del software \\
+Error del valor esperado & Error absoluto medio frente a la persistencia & $< 1$ & Semanal & Extracto \\
+Unidades marcadas & Exceso en unidades sobre el valor esperado & Seguimiento & Semanal & Salida del software \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\fi
+\subsection{Criterios de aceptación del prototipo}
+
+Cada criterio está redactado de modo que la respuesta sea verdadero o falso, sin lugar a interpretación, e indica quién lo verifica y con qué evidencia queda demostrado.
+
+\begin{longtable}{@{}c p{8.6cm} L{2cm} L{3.2cm}@{}}
+\caption{Criterios de aceptación del software.}\label{tab:aceptacion}\\
+\toprule
+\# & \textbf{Criterio} & \textbf{Quién verifica} & \textbf{Evidencia} \\
+\midrule
+\endfirsthead
+\toprule
+\# & \textbf{Criterio} & \textbf{Quién verifica} & \textbf{Evidencia} \\
+\midrule
+\endhead
+\small 1 & \small Dado el archivo exportado del sistema de compras sin modificar, cuando se ejecuta la validación, entonces el software termina sin error y devuelve un Excel con las nueve columnas de la Tabla~\ref{tab:columnas-salida} completas en todas las filas. & \small Practicante & \small Archivo de salida de una semana real \\
+\small 2 & \small Dado el caso documentado de la tienda de ATE en la semana del 17 de agosto, cuando se ejecuta la validación sobre ese período, entonces esa línea aparece marcada con nivel alto. & \small Practicante & \small Salida del software y correo de alerta original \\
+\small 3 & \small Dadas dos líneas vigentes con la misma tienda, producto, fecha de entrega y cantidad, cuando se ejecuta la validación, entonces ambas quedan marcadas con motivo duplicidad. & \small Practicante & \small Salida sobre los 54 casos identificados en el extracto \\
+\small 4 & \small Dada una serie tienda--producto con menos de $k$ semanas de historial, cuando se evalúa su pedido, entonces aparece en la hoja de no evaluables y no en la de anomalías. & \small Practicante & \small Salida del software \\
+\small 5 & \small Dada una semana cuyo factor común supera $\kappa$, cuando se ejecuta la validación, entonces el reporte incluye la advertencia de posible campaña. & \small Practicante & \small Salida sobre la semana del 27 de julio \\
+\small 6 & \small Dada una tienda con valor esperado positivo y sin ninguna línea en el archivo, cuando se ejecuta la validación, entonces aparece en la hoja de ausencias con las semanas que lleva sin pedir. & \small Practicante & \small Salida sobre las 7 series con huecos intermedios \\
+\small 7 & \small Dado el mismo archivo de entrada, cuando se ejecuta la validación dos veces, entonces ambos resultados son idénticos. & \small Practicante & \small Comparación de los dos archivos de salida \\
+\small 8 & \small Dado un archivo al que le falta una columna obligatoria, cuando se ejecuta la validación, entonces el software nombra la columna faltante y no procesa. & \small Practicante & \small Captura del mensaje de error \\
+\small 9 & \small Dado el archivo de una semana, cuando lo ejecuta alguien ajeno al proyecto sin acompañamiento, entonces obtiene el resultado en menos de un minuto y sin consultar el manual. & \small Practicante & \small Acta de la prueba de uso \\
+\bottomrule
+\end{longtable}
+
+\segun{El criterio 9 es el que suele darse por supuesto y no se escribe. Un software que entrega el resultado correcto pero que solo sabe ejecutar quien lo programó no resuelve el problema de nadie más.}{El criterio 9 busca asegurar que el software pueda ser usado por el área sin depender de quien lo programó.}
+
+\subsection{Viabilidad}
+
+\textbf{Técnica.} El volumen es pequeño y los modelos son ligeros. Python, \texttt{pandas} y \texttt{scikit-learn} bastan en un equipo corriente \cite{pedregosa2011}. El proyecto está dimensionado para el perfil de quien lo ejecuta, una ingeniera industrial con manejo de análisis de datos: no requiere desarrollo web, base de datos ni despliegue en servidores. La interfaz se arma con Streamlit, que convierte un script de análisis en una aplicación con carga de archivos, tablas y gráficos sin escribir código de frontend, y las reglas legibles del árbol se obtienen directamente de \texttt{export\_text} en \texttt{scikit-learn}. La parte propiamente informática del trabajo se reduce así a encadenar herramientas existentes.
+
+\textbf{Operativa.} El área ya hace esta verificación a mano y aplica el mismo criterio de comparar contra el período anterior, así que el sistema no le pide cambiar de forma de pensar. Dos a cinco alertas semanales caben en la rutina que ya existe y en la ventana de 30 minutos ya pactada.
+
+\segun{\textbf{Económica.} No hay licencias ni infraestructura que comprar. El costo es el tiempo de trabajo de la practicante. El exceso que hoy se despacha, unos S/~3\,200 al mes, supera el costo de las horas de validación necesarias para poner el sistema en marcha.}{\textbf{Económica.} No hay licencias ni infraestructura que comprar. El costo es, principalmente, el tiempo de las personas que participan, estimado en S/~5\,256 con reservas (Sección~\ref{sec:presupuesto}). El valor potencial en riesgo, del orden de S/~3\,200 al mes, es comparable a ese costo, aunque no constituye un ahorro comprobado.}
+
+\iffinal\else
+\subsection{Matriz de riesgos}
+
+Cada riesgo lleva su probabilidad, su impacto y una \emph{señal temprana}: el dato observable que avisa que el riesgo se está materializando, antes de que sea tarde para reaccionar.
+
+\begin{longtable}{@{}L{3.3cm}ccL{3.6cm}L{4.4cm}@{}}
+\caption{Riesgos del proyecto.}\label{tab:riesgos}\\
+\toprule
+\textbf{Riesgo} & \textbf{Prob.} & \textbf{Imp.} & \textbf{Señal temprana} & \textbf{Mitigación} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Riesgo} & \textbf{Prob.} & \textbf{Imp.} & \textbf{Señal temprana} & \textbf{Mitigación} \\
+\midrule
+\endhead
+\small No se logran marcar suficientes casos como error & \small Alta & \small Alto & \small Al revisar los veinte candidatos, la mayoría queda en duda & \small Revisarlos en la semana 4; si no alcanzan, pasar a detección no supervisada y replantear las metas \\
+\small Sobreajuste del árbol con 176 series y 3 productos & \small Media & \small Alto & \small La precisión en validación cae respecto de la de entrenamiento & \small Profundidad limitada, validación temporal, agrupar por presentación \\
+\small La referencia queda inflada porque el historial contiene los errores & \small Alta & \small Medio & \small El valor esperado sube semana a semana sin que suba el consumo & \small Mediana y MAD en lugar de promedio; recálculo excluyendo lo marcado \\
+\small Campañas y feriados generan alertas correctas pero inútiles & \small Media & \small Alto & \small Más del 10\,\% del universo supera el umbral la misma semana & \small Separar el movimiento de toda la cadena del de cada tienda (Sección~\ref{sec:campana}) \\
+\small Muy pocos casos anómalos frente al total & \small Alta & \small Medio & \small La exactitud global supera el 95\,\% sin detectar nada & \small Reportar precisión y exhaustividad, nunca exactitud \\
+\small El software no se adopta y se vuelve a la revisión manual & \small Media & \small Alto & \small En la prueba de la semana 12 alguien ajeno al proyecto no logra ejecutarlo solo & \small Criterio de aceptación 9; interfaz de un solo paso; formato de salida igual al que ya usan \\
+\small Cambio en el formato del archivo exportado & \small Baja & \small Alto & \small Aparecen columnas nuevas o renombradas en el extracto & \small Verificación de columnas al inicio del proceso, con mensaje explícito \\
+\small Pérdida de acceso a los datos & \small Baja & \small Alto & \small Demora en la entrega del extracto mensual & \small Copia anonimizada congelada al inicio del proyecto \\
+\bottomrule
+\end{longtable}
+
+Los dos primeros riesgos son los que pueden cambiar el resultado del proyecto y no solo retrasarlo. El resto se administra dentro del plan.
+
+\fi
+\subsection{Plan de trabajo}
+\label{sec:plan}
+
+El proyecto lo ejecuta una sola persona de principio a fin. No hay un equipo ni un área que valide entregas intermedias: el resultado se presenta a la jefatura al cierre y a la universidad como entregable académico. El plan está armado en consecuencia, sin pasos que dependan de que responda un tercero.
+
+Las dos primeras semanas ya están hechas. El análisis exploratorio de la Sección~\ref{sec:datos} cubre la limpieza del extracto, el cálculo del valor esperado, la separación del residuo, la detección de duplicados y de ausencias y la estimación del exceso, y funciona sobre los datos reales. Lo pendiente empieza en la semana 3.
+
+\segun{Dos decisiones de orden vale la pena explicar.}{Sobre el orden de los pasos se tomaron dos decisiones.} Las reglas simples se miden antes de entrenar el árbol, no después, para que la comparación no se acomode al resultado: el número contra el que hay que ganar ya está escrito cuando el árbol se entrena. Y el paso 3 va antes que el 4 porque sin casos marcados no hay con qué medir ninguno de los dos.
+
+El paso 10 merece una nota, porque es el que hace que la herramienta mejore con el uso. Cada vez que alguien confirma o descarta una alerta desde la ficha queda un ejemplo marcado, sin trabajo adicional. A las pocas semanas de operación hay más casos revisados que los del paso 3, y el modelo puede reentrenarse con ellos. El etiquetado deja de ser un esfuerzo puntual del inicio y pasa a ser un subproducto del uso.
+
+El hito del paso 5 es el que puede cambiar el rumbo. Si el árbol no le gana a las reglas simples, se deja el árbol y el software se construye igual sobre la regla que haya ganado: cambia cómo se decide qué marcar, no el resto de la herramienta. Que el problema se resuelva con una regla sencilla es un resultado válido y así se reportaría.
+
+\begin{longtable}{@{}c p{6.4cm} L{3.6cm} c L{1.8cm}@{}}
+\caption{Pasos del proyecto, su producto, la semana en que cierran y la herramienta con que se hacen.}\label{tab:pasos}\\
+\toprule
+\# & \textbf{Paso} & \textbf{Qué queda al terminarlo} & \textbf{Sem.} & \textbf{Con qué} \\
+\midrule
+\endfirsthead
+\toprule
+\# & \textbf{Paso} & \textbf{Qué queda al terminarlo} & \textbf{Sem.} & \textbf{Con qué} \\
+\midrule
+\endhead
+\multicolumn{5}{@{}l}{\textit{Hecho}} \\
+\small 1 & \small \textbf{Limpiar el dataset y explorarlo.} Quitar las líneas anuladas, revisar formatos, armar las series semanales y medir el problema & \small Archivo limpio, el programa que lo limpia y las cifras de la Sección~\ref{sec:datos} & \small 1--2 & \small\texttt{pandas} \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{Modelo}} \\
+\small 2 & \small \textbf{Armar la tabla de señales.} Para cada pedido, calcular las ocho señales que después mirará el modelo & \small Tabla con una fila por pedido y sus ocho señales & \small 3--4 & \small\texttt{pandas} \\
+\small 3 & \small \textbf{Marcar los casos que fueron error.} Revisar los candidatos uno por uno apoyándose en el historial de correos de alerta \segun{y en las 27 líneas que alguien rectificó}{y exigiendo evidencia operativa para cada error} & \small Lista de casos marcados como error o como normales & \small \segun{4--5}{4--7} & \small Excel \\
+\small 4 & \small \textbf{Probar primero las reglas simples.} Medir tres métodos sencillos para saber contra qué hay que ganarle & \small Resultado de las tres reglas & \small 5--6 & \small\texttt{pandas}, \texttt{sklearn} \\
+\small 5 & \small \textbf{Entrenar el árbol y compararlo} con las reglas del paso 4 & \small Comparación semana por semana. \textbf{Hito: se decide si el árbol se justifica} & \small \segun{6--7}{7--8} & \small\texttt{sklearn} \\
+\small 6 & \small \textbf{Decidir a partir de cuánto se avisa}, buscando el punto donde el número de alertas por semana sigue siendo revisable & \small Umbral fijado y curva umbral--alertas & \small 8 & \small\texttt{pandas} \\
+\small 7 & \small \textbf{Escribir el motivo en palabras.} Convertir lo que decide el modelo en una frase que el cliente entienda & \small Texto del motivo para cada alerta & \small 8 & \small\texttt{export\_text} \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{Software}} \\
+\small 8 & \small \textbf{Motor de cálculo.} Una función que recibe la ruta del Excel y devuelve la tabla de alertas & \small Programa que ya funciona, aunque sin pantallas & \small 9 & \small\texttt{pandas} \\
+\small 9 & \small \textbf{Pantalla de carga y tabla de alertas.} Arrastrar el archivo, avisar qué falta si algo no está, y mostrar el resultado con filtros por tienda, producto y nivel & \small Aplicación usable de punta a punta & \small 10 & \small Streamlit \\
+\small 10 & \small \textbf{Ficha de detalle y registro de decisiones.} Gráfico de las últimas semanas, las otras dos presentaciones, la regla que disparó la alerta, y botones para confirmar o descartar & \small Ficha por alerta e historial de decisiones & \small 11 & \small Streamlit \\
+\small 11 & \small \textbf{Ausencias, aviso de campaña y descarga} del Excel de salida & \small Archivo de salida completo & \small 11 & \small Streamlit \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{Cierre}} \\
+\small 12 & \small \textbf{Probarlo sobre una semana real, ajustar y documentar} & \small Manual de uso, informe final y resultados & \small 12 & \small -- \\
+\bottomrule
+\end{longtable}
+

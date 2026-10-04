@@ -1,0 +1,61 @@
+\section{Retroalimentación incorporada}\label{sec:retro}
+
+El asesor planteó delimitar mejor el problema: que el pedido no lo envíe el usuario de tienda sino directamente un software. La idea ataca el error en su origen, porque si nadie digita no hay nada que digitar mal. Se evaluó y se optó por otra delimitación, porque las dos propuestas automatizan cosas de naturaleza distinta \segun{y solo una conviene automatizar:}{y solo una corresponde al proveedor:} el envío del pedido es un proceso de cara al cliente, la detección de errores es un control interno del proveedor.
+
+\begin{table}[htbp]
+\centering
+\caption{Automatizar el pedido frente a automatizar la detección.}
+\label{tab:retro}
+\small
+\begin{tabularx}{\textwidth}{@{}L{3cm}YY@{}}
+\toprule
+ & \textbf{Automatizar el pedido} & \textbf{Automatizar la detección} \\
+\midrule
+Dónde corre & En el proceso de compras del cliente & En el proveedor, sobre su propio archivo \\
+Permisos & Compras y TI del cliente & Ninguno \\
+Al replicarlo con otro cliente & Hay que rehacerlo: otro ERP, otro formato, otro calendario & Funciona igual: el dato de entrada es del proveedor \\
+Si se equivoca & El pedido errado lo emitió el proveedor & Se pierde una alerta; el pedido sigue siendo del cliente \\
+Sobre la relación & Elimina el contacto semanal & Le da contenido \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Automatizar el flujo con el cliente tiene tres costos. El primero es que el esfuerzo no se acumula: el pedido cambia de cliente a cliente y con la temporada, de modo que habría que construir y mantener una integración por cada cadena, sin reutilizar nada con la siguiente. El segundo es que ese pedido semanal es la línea directa con el cliente, el momento en que el proveedor se entera de lo que la tienda cree que va a necesitar; ahí aparecen las señales de que algo cambió, desde una caída sostenida hasta el reparto del volumen con otro proveedor. Un sistema que genera los pedidos por su cuenta deja de recibir esa señal y se enteraría tarde, cuando el volumen ya bajó. El tercero es un traslado de responsabilidad: hoy, si la cantidad está mal, el error es del cliente y el proveedor tiene con qué sustentarlo; si el proveedor emitiera los pedidos, cualquier sobre-despacho pasaría a ser error propio, con la discusión comercial y la devolución a cuenta suya.
+
+El control interno no tiene ninguno de esos costos. Corre sobre datos que el proveedor ya tiene, sirve igual para cualquier cliente que emita pedidos, y no sustituye la conversación sino que le da contenido: en lugar de un correo que dice «su pedido parece alto», el área envía la cantidad solicitada, la esperada según el historial de esa tienda y el motivo. \segun{Eso fideliza más que hacerle el pedido, porque demuestra que alguien está mirando sus números. La regla que ordena la decisión es automatizar donde el proceso es estable y propio, y dejarlo fuera donde es variable y compartido.}{Esto aporta más a la relación con el cliente que emitir el pedido por él. En resumen, se automatiza el proceso que pertenece al proveedor y es estable, y se deja fuera el que es compartido con el cliente y cambia con cada cadena.}
+
+La observación sí amplió el alcance en un punto. Si el software estima la demanda esperada de cada tienda, también puede detectar la ausencia de pedido: una tienda que debía pedir y no pidió. Ese caso no estaba contemplado y se incorporó según la Sección~\ref{sec:ausencias}.
+
+\iffinal
+\subsection{Segunda revisión del asesor}
+
+La revisión del avance planteó seis observaciones. La Tabla~\ref{tab:av-retro} resume cómo se incorporó cada una y en qué sección se desarrolla. Estas observaciones modificaron tres aspectos del proyecto: qué información puede usar el método, qué se considera un error y sobre qué periodo se mide el desempeño.
+
+\begin{table}[htbp]
+\centering
+\caption{Observaciones de la segunda revisión y su incorporación.}
+\label{tab:av-retro}
+\small
+\begin{tabularx}{\textwidth}{@{}L{4.8cm}YL{1.6cm}@{}}
+\toprule
+\textbf{Observación} & \textbf{Cambio realizado} & \textbf{Sección} \\
+\midrule
+Cada variable debe conocerse al emitir la alerta & Se clasificaron las variables por disponibilidad y se construyó una versión que evalúa cada línea con lo sabido ese día & \ref{sec:av-tiempo}, \ref{sec:av-por-pedido} \\
+Distinguir desviación de error confirmado & Terminología de tres niveles: desviación, caso sospechoso y error confirmado & \ref{sec:av-terminos} \\
+Distinguir valor en riesgo de pérdida ocurrida & Los S/~3\,200 mensuales se presentan como valor potencial en riesgo & \ref{sec:av-terminos}, \ref{sec:datos} \\
+Validar etiquetas con evidencia operativa & Cada error exige una fuente documentada; las modificaciones de cantidad dejan de contarse como errores & \ref{sec:av-marcado} \\
+Pasar del análisis semanal a alertas por pedido & Procedimiento en tres etapas, ya implementado en el prototipo & \ref{sec:av-pedido} \\
+Reservar un periodo independiente y moderar conclusiones & Periodos de ajuste, validación y prueba; las cifras se reportan como preliminares & \ref{sec:av-periodos} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\else
+\section{Estado actual del proyecto}
+\label{sec:estado-e1}
+
+El proyecto se encuentra en la \textbf{etapa de análisis}. Lo que este entregable presenta es el problema delimitado, medido y con un método de detección probado sobre los datos históricos. La construcción del software todavía no ha empezado: corresponde a los pasos 8 a 12 del plan de trabajo.
+
+Lo que ya está resuelto es lo siguiente. El problema dejó de ser una queja y pasó a tener cifras: 54 casos de cantidad repetida, 17 desviaciones relevantes en nueve semanas y alrededor de S/~3\,200 mensuales en producto despachado por encima de lo esperado. El criterio de detección se probó contra un caso que la operación ya había identificado por su cuenta, el de la tienda de ATE, y lo reencontró sin ayuda. Y el principal riesgo del método, confundir un feriado con un error, quedó resuelto dentro del propio cálculo mediante la separación entre el movimiento común de la cadena y el de cada tienda, sin depender de que alguien recuerde qué pasó una semana determinada.
+
+Lo que falta es lo que va de la semana 3 en adelante. El árbol de decisión aún no está entrenado, los cinco parámetros de la Tabla~\ref{tab:hiper} tienen valores iniciales pero no ajustados con validación temporal, y el software existe como especificación y no como programa. Las métricas comprometidas en la Tabla~\ref{tab:indicadores} son metas y todavía no resultados.
+\fi
